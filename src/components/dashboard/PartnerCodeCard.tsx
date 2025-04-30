@@ -41,6 +41,8 @@ export const ShortUrlRedirect = () => {
       }
 
       try {
+        console.log('Processing redirect for code:', code);
+
         // Get the target URL from short_urls
         const { data: urlData, error: urlError } = await supabase
           .from('short_urls')
@@ -54,57 +56,52 @@ export const ShortUrlRedirect = () => {
           return;
         }
 
-        // Check total clicks from this IP
-        const { data: totalClicks, error: totalClicksError } = await supabase
-          .from('clicks')
-          .select('id')
-          .eq('ip_address', window.location.hostname);
+        // Use localStorage to track clicks
+        const clickKey = `click_${code}`;
+        const lastClickTime = localStorage.getItem(clickKey);
+        const totalClicksKey = `total_clicks`;
+        const totalClicks = parseInt(localStorage.getItem(totalClicksKey) || '0');
 
-        if (totalClicksError) {
-          console.error('Error checking total clicks:', totalClicksError);
-          return;
-        }
-
-        // If more than 5 clicks from this IP, don't count
-        if (totalClicks && totalClicks.length >= 5) {
-          console.log('Maximum clicks reached for this IP');
+        // Check if total clicks exceeded
+        if (totalClicks >= 5) {
+          console.log('Maximum total clicks reached');
           window.location.href = urlData.target_url;
           return;
         }
 
-        // Check clicks in the last hour from this IP
-        const oneHourAgo = new Date();
-        oneHourAgo.setHours(oneHourAgo.getHours() - 1);
-
-        const { data: recentClicks, error: recentClicksError } = await supabase
-          .from('clicks')
-          .select('id')
-          .eq('ip_address', window.location.hostname)
-          .gte('created_at', oneHourAgo.toISOString());
-
-        if (recentClicksError) {
-          console.error('Error checking recent clicks:', recentClicksError);
-          return;
-        }
-
-        // If clicked in the last hour, don't count
-        if (recentClicks && recentClicks.length > 0) {
-          console.log('Already clicked within the last hour');
-          window.location.href = urlData.target_url;
-          return;
+        // Check if clicked within last hour
+        if (lastClickTime) {
+          const lastClick = new Date(lastClickTime);
+          const now = new Date();
+          const hoursSinceLastClick = (now.getTime() - lastClick.getTime()) / (1000 * 60 * 60);
+          
+          if (hoursSinceLastClick < 1) {
+            console.log('Already clicked within the last hour');
+            window.location.href = urlData.target_url;
+            return;
+          }
         }
 
         // Register the click
-        const { error: insertError } = await supabase.from('clicks').insert({
-          user_id: urlData.user_id,
-          short_code: code,
-          type: 'direct',
-          ip_address: window.location.hostname,
-          is_unique: true
-        });
+        try {
+          const { error: insertError } = await supabase.from('clicks').insert({
+            user_id: urlData.user_id,
+            short_code: code,
+            type: 'direct',
+            ip_address: 'development-ip', // We'll handle real IPs in production
+            is_unique: true
+          });
 
-        if (insertError) {
-          console.error('Error registering click:', insertError);
+          if (insertError) {
+            console.error('Error registering click:', insertError);
+          } else {
+            // Update localStorage only if click was registered successfully
+            localStorage.setItem(clickKey, new Date().toISOString());
+            localStorage.setItem(totalClicksKey, (totalClicks + 1).toString());
+            console.log('Click registered successfully');
+          }
+        } catch (error) {
+          console.error('Error recording click:', error);
         }
 
         // Redirect to target URL
@@ -135,10 +132,9 @@ const PartnerCodeCard = ({ partnerCode, onClicksUpdate }: PartnerCodeCardProps) 
       if (!profile) return;
 
       try {
-        console.log('Fetching click count for user:', profile.id);
         const { data: clicks, error } = await supabase
           .from('clicks')
-          .select('id, type')
+          .select('id')
           .eq('user_id', profile.id)
           .eq('type', 'direct');
 
@@ -147,9 +143,7 @@ const PartnerCodeCard = ({ partnerCode, onClicksUpdate }: PartnerCodeCardProps) 
           return;
         }
 
-        const count = clicks?.length || 0;
-        console.log('Found clicks:', count);
-        setClickCount(count);
+        setClickCount(clicks?.length || 0);
         if (onClicksUpdate) {
           onClicksUpdate();
         }
@@ -165,24 +159,20 @@ const PartnerCodeCard = ({ partnerCode, onClicksUpdate }: PartnerCodeCardProps) 
       .channel('clicks')
       .on('postgres_changes', 
         { 
-          event: '*',  // Listen for all events
+          event: 'INSERT', 
           schema: 'public', 
           table: 'clicks',
           filter: `user_id=eq.${profile?.id} AND type=eq.direct`
         }, 
-        (payload) => {
-          console.log('Received click update:', payload);
+        () => {
+          console.log('New click detected, updating count...');
           fetchClickCount();
         }
       )
       .subscribe();
 
-    // Fetch click count every 30 seconds as a backup
-    const intervalId = setInterval(fetchClickCount, 30000);
-
     return () => {
       subscription.unsubscribe();
-      clearInterval(intervalId);
     };
   }, [profile, onClicksUpdate]);
 
