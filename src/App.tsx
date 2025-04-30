@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -18,9 +18,14 @@ import Settings from "./pages/Settings";
 import Withdrawals from "./pages/Withdrawals";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
-import { ShortUrlRedirect } from "@/components/dashboard/PartnerCodeCard";
 
 const queryClient = new QueryClient();
+
+const ShortUrlRedirect = () => {
+  const { code } = useParams();
+  const edgeFunctionsUrl = import.meta.env.VITE_EDGE_FUNCTIONS_URL || '/functions/v1';
+  return <Navigate to={`${edgeFunctionsUrl}/redirect/${code}`} replace />;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

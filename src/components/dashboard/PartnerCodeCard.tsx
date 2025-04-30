@@ -3,140 +3,17 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useParams, useNavigate } from 'react-router-dom';
 
 interface PartnerCodeCardProps {
   partnerCode: string;
-  onClicksUpdate?: () => void;
 }
 
-// Helper function to detect bots
-const isBot = (userAgent: string): boolean => {
-  const botPatterns = [
-    'bot', 'crawler', 'spider', 'headless', 'puppet',
-    'selenium', 'chrome-lighthouse', 'googlebot', 'bingbot',
-    'yandexbot', 'duckduckbot', 'slurp'
-  ];
-  const lowerUA = userAgent.toLowerCase();
-  return botPatterns.some(pattern => lowerUA.includes(pattern));
-};
-
-// Helper function to generate visitor ID
-const generateVisitorId = (): string => {
-  const timestamp = Date.now().toString(36);
-  const randomStr = Math.random().toString(36).substring(2, 8);
-  return `${timestamp}-${randomStr}`;
-};
-
-export const ShortUrlRedirect = () => {
-  const { code } = useParams();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleRedirect = async () => {
-      if (!code) {
-        console.error('No short code provided');
-        navigate('/404');
-        return;
-      }
-
-      try {
-        // Get the target URL from short_urls
-        const { data: urlData, error: urlError } = await supabase
-          .from('short_urls')
-          .select('user_id, target_url')
-          .eq('short_code', code)
-          .single();
-
-        if (urlError || !urlData) {
-          console.error('Error fetching short URL:', urlError);
-          navigate('/404');
-          return;
-        }
-
-        // Simply register the click
-        const { error: insertError } = await supabase.from('clicks').insert({
-          user_id: urlData.user_id,
-          short_code: code,
-          type: 'direct',
-          ip_address: '0.0.0.0',
-          is_unique: true
-        });
-
-        if (insertError) {
-          console.error('Error registering click:', insertError);
-        }
-
-        // Redirect to target URL
-        window.location.href = urlData.target_url;
-      } catch (error) {
-        console.error('Error handling redirect:', error);
-        navigate('/404');
-      }
-    };
-
-    handleRedirect();
-  }, [code, navigate]);
-
-  return <div>Redirecting...</div>;
-};
-
-const PartnerCodeCard = ({ partnerCode, onClicksUpdate }: PartnerCodeCardProps) => {
+const PartnerCodeCard = ({ partnerCode }: PartnerCodeCardProps) => {
   const { toast } = useToast();
   const { profile } = useAuth();
   const [shortUrl, setShortUrl] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [clickCount, setClickCount] = useState(0);
-
-  // Fetch click count
-  useEffect(() => {
-    const fetchClickCount = async () => {
-      if (!profile) return;
-
-      try {
-        const { data: clicks, error } = await supabase
-          .from('clicks')
-          .select('id')
-          .eq('user_id', profile.id)
-          .eq('type', 'direct');
-
-        if (error) {
-          console.error('Error fetching clicks:', error);
-          return;
-        }
-
-        setClickCount(clicks?.length || 0);
-        if (onClicksUpdate) {
-          onClicksUpdate();
-        }
-      } catch (error) {
-        console.error('Error fetching click count:', error);
-      }
-    };
-
-    fetchClickCount();
-    
-    // Set up real-time subscription for clicks
-    const subscription = supabase
-      .channel('clicks')
-      .on('postgres_changes', 
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'clicks',
-          filter: `user_id=eq.${profile?.id} AND type=eq.direct`
-        }, 
-        () => {
-          fetchClickCount();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [profile, onClicksUpdate]);
 
   useEffect(() => {
     const createOrGetShortUrl = async () => {

@@ -33,19 +33,6 @@ CREATE POLICY "Anyone can view short URLs for redirection"
   TO anon
   USING (true);
 
--- Update clicks table with additional fields
-ALTER TABLE public.clicks 
-ADD COLUMN IF NOT EXISTS visitor_id TEXT,
-ADD COLUMN IF NOT EXISTS is_unique BOOLEAN DEFAULT true,
-ADD COLUMN IF NOT EXISTS referrer TEXT,
-ADD COLUMN IF NOT EXISTS metadata JSONB,
-ADD COLUMN IF NOT EXISTS is_bot BOOLEAN DEFAULT false;
-
--- Create index for visitor_id to prevent duplicate clicks
-CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_visitor_clicks 
-ON public.clicks (user_id, short_code, visitor_id, created_at::date) 
-WHERE is_unique = true;
-
 -- Function to generate a unique short code
 CREATE OR REPLACE FUNCTION generate_unique_short_code()
 RETURNS TEXT AS $$
