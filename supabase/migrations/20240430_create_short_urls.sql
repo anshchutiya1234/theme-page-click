@@ -11,6 +11,28 @@ CREATE TABLE IF NOT EXISTS public.short_urls (
 -- Create index for faster lookups
 CREATE INDEX IF NOT EXISTS idx_short_urls_short_code ON public.short_urls(short_code);
 
+-- Enable Row Level Security
+ALTER TABLE public.short_urls ENABLE ROW LEVEL SECURITY;
+
+-- Create policies
+CREATE POLICY "Users can create their own short URLs"
+  ON public.short_urls
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can view their own short URLs"
+  ON public.short_urls
+  FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Anyone can view short URLs for redirection"
+  ON public.short_urls
+  FOR SELECT
+  TO anon
+  USING (true);
+
 -- Function to generate a unique short code
 CREATE OR REPLACE FUNCTION generate_unique_short_code()
 RETURNS TEXT AS $$
@@ -27,9 +49,9 @@ BEGIN
     END LOOP;
     
     BEGIN
-      INSERT INTO public.short_urls (short_code) VALUES (result)
-      ON CONFLICT DO NOTHING;
-      IF FOUND THEN
+      -- Check if the code already exists
+      PERFORM 1 FROM public.short_urls WHERE short_code = result;
+      IF NOT FOUND THEN
         success := true;
       END IF;
     EXCEPTION WHEN unique_violation THEN
