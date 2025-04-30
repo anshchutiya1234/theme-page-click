@@ -94,6 +94,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       
+      // First, generate a unique partner code
+      // This is done automatically by the trigger function on the Supabase side
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -101,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           data: {
             name: userData.name,
             instagram_username: userData.instagramUsername,
-            referred_by: userData.referralCode,
+            referred_by: userData.referred_by,
           }
         }
       });
@@ -116,6 +119,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Navigate to dashboard after signup
       if (data.session) {
         navigate('/dashboard');
+      } else {
+        // If email confirmation is required
+        toast({
+          title: "Email verification required",
+          description: "Please check your email to complete the signup process.",
+        });
       }
     } catch (error: any) {
       toast({
@@ -123,6 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: error.message,
         variant: "destructive",
       });
+      console.error('Signup error:', error);
     } finally {
       setLoading(false);
     }

@@ -10,6 +10,14 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import Navbar from '@/components/layout/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -28,14 +36,13 @@ const Join = () => {
   const [referralCode, setReferralCode] = useState<string>('');
   const { signUp, user } = useAuth();
   
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors, isSubmitting },
-  } = useForm<FormData>({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: '',
+      instagramUsername: '',
+      email: '',
+      password: '',
       referralCode: '',
     },
   });
@@ -54,7 +61,7 @@ const Join = () => {
     
     if (refCode) {
       setReferralCode(refCode);
-      setValue('referralCode', refCode);
+      form.setValue('referralCode', refCode);
       
       // Store referral code in localStorage
       localStorage.setItem('referralCode', refCode);
@@ -63,17 +70,17 @@ const Join = () => {
       const storedCode = localStorage.getItem('referralCode');
       if (storedCode) {
         setReferralCode(storedCode);
-        setValue('referralCode', storedCode);
+        form.setValue('referralCode', storedCode);
       }
     }
-  }, [location.search, setValue]);
+  }, [location.search, form]);
 
   const onSubmit = async (data: FormData) => {
     try {
       await signUp(data.email, data.password, {
         name: data.name,
         instagramUsername: data.instagramUsername,
-        referralCode: data.referralCode,
+        referred_by: data.referralCode || null,
       });
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -93,93 +100,108 @@ const Join = () => {
             </p>
           </div>
           
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Your full name"
-                  {...register('name')}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-6">
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your full name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
-                )}
+                
+                <FormField
+                  control={form.control}
+                  name="instagramUsername"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Instagram Username</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your Instagram handle" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="your@email.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="********" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="referralCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Partner Code (Optional)
+                        {referralCode && <span className="ml-2 text-green-600">✓</span>}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="5-digit code"
+                          value={referralCode}
+                          onChange={(e) => {
+                            setReferralCode(e.target.value);
+                            field.onChange(e.target.value);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
               
-              <div>
-                <Label htmlFor="instagramUsername">Instagram Username</Label>
-                <Input
-                  id="instagramUsername"
-                  type="text"
-                  placeholder="Your Instagram handle"
-                  {...register('instagramUsername')}
-                />
-                {errors.instagramUsername && (
-                  <p className="mt-1 text-sm text-red-500">{errors.instagramUsername.message}</p>
-                )}
-              </div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? 'Creating Account...' : 'Create Account'}
+              </Button>
               
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  {...register('email')}
-                />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
-                )}
+              <div className="text-center">
+                <p className="text-sm text-gray-600">
+                  Already have an account?{' '}
+                  <Link to="/login" className="font-medium text-partner-purple hover:underline">
+                    Login here
+                  </Link>
+                </p>
               </div>
-              
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="********"
-                  {...register('password')}
-                />
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
-                )}
-              </div>
-              
-              <div>
-                <Label htmlFor="referralCode">
-                  Partner Code (Optional)
-                  {referralCode && <span className="ml-2 text-green-600">✓</span>}
-                </Label>
-                <Input
-                  id="referralCode"
-                  type="text"
-                  placeholder="5-digit code"
-                  value={referralCode}
-                  onChange={(e) => setReferralCode(e.target.value)}
-                  {...register('referralCode')}
-                />
-              </div>
-            </div>
-            
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Creating Account...' : 'Create Account'}
-            </Button>
-            
-            <div className="text-center">
-              <p className="text-sm text-gray-600">
-                Already have an account?{' '}
-                <Link to="/login" className="font-medium text-partner-purple hover:underline">
-                  Login here
-                </Link>
-              </p>
-            </div>
-          </form>
+            </form>
+          </Form>
         </div>
       </div>
     </div>
