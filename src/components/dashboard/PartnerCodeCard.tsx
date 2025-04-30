@@ -41,35 +41,12 @@ export const ShortUrlRedirect = () => {
       }
 
       try {
-        console.log('=== Click Debug Info ===');
-        console.log('Short code:', code);
-        console.log('User Agent:', navigator.userAgent);
-        
-        // Check if it's a bot
-        const userAgent = navigator.userAgent;
-        if (isBot(userAgent)) {
-          console.log('Bot detected, not counting click');
-          navigate('/404');
-          return;
-        }
-
-        // Get or create visitor ID
-        let visitorId = localStorage.getItem('visitorId');
-        if (!visitorId) {
-          visitorId = generateVisitorId();
-          localStorage.setItem('visitorId', visitorId);
-        }
-        console.log('Visitor ID:', visitorId);
-
         // Get the target URL from short_urls
-        console.log('Fetching URL data from Supabase...');
         const { data: urlData, error: urlError } = await supabase
           .from('short_urls')
-          .select('user_id, target_url, short_code')
+          .select('user_id, target_url')
           .eq('short_code', code)
           .single();
-
-        console.log('URL Data Response:', { urlData, urlError });
 
         if (urlError || !urlData) {
           console.error('Error fetching short URL:', urlError);
@@ -77,93 +54,63 @@ export const ShortUrlRedirect = () => {
           return;
         }
 
-        // Check if this visitor has clicked this link before
-        console.log('Checking for existing clicks...');
-        const { data: existingClicks, error: existingClickError } = await supabase
+        // Check total clicks from this IP
+        const { data: totalClicks, error: totalClicksError } = await supabase
           .from('clicks')
-          .select('id, created_at')
-          .eq('short_code', code)
-          .eq('visitor_id', visitorId)
-          .eq('type', 'direct');
+          .select('id')
+          .eq('ip_address', window.location.hostname);
 
-        console.log('Existing Clicks Response:', { existingClicks, existingClickError });
-
-        if (existingClickError) {
-          console.error('Error checking existing clicks:', existingClickError);
+        if (totalClicksError) {
+          console.error('Error checking total clicks:', totalClicksError);
+          return;
         }
 
-        const isFirstClick = !existingClicks || existingClicks.length === 0;
-        console.log('Is first click:', isFirstClick);
-
-        if (isFirstClick) {
-          try {
-            console.log('Attempting to register new click...');
-            const clickData = {
-              user_id: urlData.user_id,
-              short_code: code,
-              type: 'direct',
-              ip_address: '0.0.0.0',
-              user_agent: userAgent,
-              visitor_id: visitorId,
-              is_unique: true,
-              referrer: document.referrer || 'direct',
-              metadata: {
-                screen: {
-                  width: window.screen.width,
-                  height: window.screen.height,
-                  colorDepth: window.screen.colorDepth
-                },
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                language: navigator.language,
-                platform: navigator.platform,
-                timestamp: new Date().toISOString()
-              }
-            };
-            
-            console.log('Click data to insert:', clickData);
-            
-            const { error: insertError, data: insertedClick } = await supabase
-              .from('clicks')
-              .insert(clickData)
-              .select()
-              .single();
-
-            if (insertError) {
-              console.error('Error inserting click:', insertError);
-              console.error('Error details:', {
-                code: insertError.code,
-                message: insertError.message,
-                details: insertError.details
-              });
-            } else {
-              console.log('Click registered successfully:', insertedClick);
-            }
-          } catch (error) {
-            console.error('Error recording click:', error);
-            if (error instanceof Error) {
-              console.error('Error details:', {
-                name: error.name,
-                message: error.message,
-                stack: error.stack
-              });
-            }
-          }
-        } else {
-          console.log('Visitor has already clicked this link');
+        // If more than 5 clicks from this IP, don't count
+        if (totalClicks && totalClicks.length >= 5) {
+          console.log('Maximum clicks reached for this IP');
+          window.location.href = urlData.target_url;
+          return;
         }
 
-        // Redirect to the target URL
-        console.log('Redirecting to:', urlData.target_url);
+        // Check clicks in the last hour from this IP
+        const oneHourAgo = new Date();
+        oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+
+        const { data: recentClicks, error: recentClicksError } = await supabase
+          .from('clicks')
+          .select('id')
+          .eq('ip_address', window.location.hostname)
+          .gte('created_at', oneHourAgo.toISOString());
+
+        if (recentClicksError) {
+          console.error('Error checking recent clicks:', recentClicksError);
+          return;
+        }
+
+        // If clicked in the last hour, don't count
+        if (recentClicks && recentClicks.length > 0) {
+          console.log('Already clicked within the last hour');
+          window.location.href = urlData.target_url;
+          return;
+        }
+
+        // Register the click
+        const { error: insertError } = await supabase.from('clicks').insert({
+          user_id: urlData.user_id,
+          short_code: code,
+          type: 'direct',
+          ip_address: window.location.hostname,
+          is_unique: true
+        });
+
+        if (insertError) {
+          console.error('Error registering click:', insertError);
+        }
+
+        // Redirect to target URL
         window.location.href = urlData.target_url;
       } catch (error) {
         console.error('Error handling redirect:', error);
-        if (error instanceof Error) {
-          console.error('Error details:', {
-            name: error.name,
-            message: error.message,
-            stack: error.stack
-          });
-        }
         navigate('/404');
       }
     };
