@@ -1,4 +1,7 @@
--- Create a function to clear direct clicks
+-- First drop the function if it exists
+DROP FUNCTION IF EXISTS clear_direct_clicks();
+
+-- Create the function to clear direct clicks
 CREATE OR REPLACE FUNCTION clear_direct_clicks()
 RETURNS void AS $$
 BEGIN
@@ -7,5 +10,5 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Call the function to clear clicks
+-- Now call the function
 SELECT clear_direct_clicks(); 
