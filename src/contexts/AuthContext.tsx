@@ -94,9 +94,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       
-      // First, generate a unique partner code
-      // This is done automatically by the trigger function on the Supabase side
-      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -133,6 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         variant: "destructive",
       });
       console.error('Signup error:', error);
+      throw error; // Re-throw to allow handling in the form component
     } finally {
       setLoading(false);
     }
@@ -161,6 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: error.message,
         variant: "destructive",
       });
+      throw error; // Re-throw to allow handling in the form component
     } finally {
       setLoading(false);
     }

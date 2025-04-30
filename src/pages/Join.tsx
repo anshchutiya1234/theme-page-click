@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import Navbar from '@/components/layout/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,6 +17,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -35,6 +36,8 @@ const Join = () => {
   const location = useLocation();
   const [referralCode, setReferralCode] = useState<string>('');
   const { signUp, user } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -76,14 +79,20 @@ const Join = () => {
   }, [location.search, form]);
 
   const onSubmit = async (data: FormData) => {
+    setError(null);
+    setIsSubmitting(true);
+    
     try {
       await signUp(data.email, data.password, {
         name: data.name,
         instagramUsername: data.instagramUsername,
         referred_by: data.referralCode || null,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting form:', error);
+      setError(error?.message || 'An error occurred during signup. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -99,6 +108,14 @@ const Join = () => {
               Earn $1,000 per 10,000 high-quality clicks. No cap.
             </p>
           </div>
+          
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-6">
@@ -187,9 +204,9 @@ const Join = () => {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={form.formState.isSubmitting}
+                disabled={isSubmitting}
               >
-                {form.formState.isSubmitting ? 'Creating Account...' : 'Create Account'}
+                {isSubmitting ? 'Creating Account...' : 'Create Account'}
               </Button>
               
               <div className="text-center">
