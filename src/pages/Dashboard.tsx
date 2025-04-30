@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LinkIcon, ChartBarIcon, UsersIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
@@ -72,25 +71,25 @@ const Dashboard = () => {
           title="Total Direct Clicks"
           value={stats?.direct_clicks.toLocaleString() || '0'}
           icon={<LinkIcon className="h-5 w-5" />}
-          trend={{ value: '+12.5%', positive: true }}
+          trend={stats?.direct_clicks ? undefined : null}
         />
         <StatsCard
           title="Bonus Clicks"
           value={stats?.bonus_clicks.toLocaleString() || '0'}
           icon={<ChartBarIcon className="h-5 w-5" />}
-          trend={{ value: '+8.3%', positive: true }}
+          trend={stats?.bonus_clicks ? undefined : null}
         />
         <StatsCard
           title="Total Earnings"
           value={`$${stats?.total_earnings.toFixed(2) || '0.00'}`}
           icon={<CurrencyDollarIcon className="h-5 w-5" />}
-          trend={{ value: '+15.2%', positive: true }}
+          trend={stats?.total_earnings ? undefined : null}
         />
         <StatsCard
           title="Sub-Partners"
           value={stats?.sub_partners_count || 0}
           icon={<UsersIcon className="h-5 w-5" />}
-          trend={{ value: '+2', positive: true }}
+          trend={stats?.sub_partners_count ? undefined : null}
         />
       </div>
       

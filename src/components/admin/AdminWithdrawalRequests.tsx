@@ -1,9 +1,21 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+
+const formatPaymentMethod = (method: string) => {
+  switch (method.toLowerCase()) {
+    case 'paypal':
+      return 'PayPal';
+    case 'bank_transfer':
+      return 'Bank Transfer';
+    case 'crypto':
+      return 'Cryptocurrency';
+    default:
+      return method.charAt(0).toUpperCase() + method.slice(1);
+  }
+};
 
 interface WithdrawalRequest {
   id: string;
@@ -117,15 +129,6 @@ const AdminWithdrawalRequests = () => {
         description: "Failed to update withdrawal status.",
         variant: "destructive",
       });
-    }
-  };
-  
-  const formatPaymentMethod = (method: string) => {
-    switch (method) {
-      case 'paypal': return 'PayPal';
-      case 'upi': return 'UPI';
-      case 'crypto': return 'Cryptocurrency';
-      default: return method;
     }
   };
   

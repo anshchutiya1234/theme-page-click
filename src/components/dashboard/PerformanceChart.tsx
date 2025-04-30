@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   LineChart,
@@ -165,15 +164,13 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
   };
 
   const generateFallbackData = (): ChartData[] => {
-    // Default mock data in case of no real data
-    return [
-      { name: 'Jan', directClicks: 650, bonusClicks: 150 },
-      { name: 'Feb', directClicks: 920, bonusClicks: 230 },
-      { name: 'Mar', directClicks: 1450, bonusClicks: 320 },
-      { name: 'Apr', directClicks: 1200, bonusClicks: 400 },
-      { name: 'May', directClicks: 1800, bonusClicks: 500 },
-      { name: 'Jun', directClicks: 2500, bonusClicks: 580 },
-    ];
+    // Return zero values for all months
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    return months.map(month => ({
+      name: month,
+      directClicks: 0,
+      bonusClicks: 0
+    }));
   };
 
   return (

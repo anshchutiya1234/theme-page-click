@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -29,7 +28,7 @@ const Admin = () => {
           
         if (error) throw error;
         
-        setIsAdmin(data);
+        setIsAdmin(data ?? false);
       } catch (error) {
         console.error('Error checking admin status:', error);
         setIsAdmin(false);

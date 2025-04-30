@@ -1,4 +1,3 @@
-
 import React, { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -24,7 +23,7 @@ const StatsCard = ({ title, value, icon, trend, className }: StatsCardProps) => 
         {icon && <div className="text-gray-400">{icon}</div>}
       </div>
       
-      {trend && (
+      {trend !== null && trend && (
         <div className="mt-2 flex items-center text-sm">
           <span className={trend.positive ? 'text-green-600' : 'text-red-600'}>
             {trend.positive ? '↑' : '↓'} {trend.value}

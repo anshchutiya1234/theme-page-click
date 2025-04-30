@@ -142,6 +142,38 @@ export type Database = {
           },
         ]
       }
+      short_urls: {
+        Row: {
+          id: string
+          user_id: string
+          short_code: string
+          target_url: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          short_code: string
+          target_url: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          short_code?: string
+          target_url?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "short_urls_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -175,6 +207,10 @@ export type Database = {
       register_click: {
         Args: { referrer_code: string }
         Returns: boolean
+      }
+      generate_unique_short_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
     }
     Enums: {
