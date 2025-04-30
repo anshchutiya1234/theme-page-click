@@ -28,15 +28,21 @@ const generateVisitorId = (): string => {
   return `${timestamp}-${randomStr}`;
 };
 
-const ShortUrlRedirect = () => {
+export const ShortUrlRedirect = () => {
   const { code } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleRedirect = async () => {
-      if (!code) return;
+      if (!code) {
+        console.error('No short code provided');
+        navigate('/404');
+        return;
+      }
 
       try {
+        console.log('Processing redirect for code:', code);
+        
         // Check if it's a bot
         if (isBot(navigator.userAgent)) {
           console.log('Bot detected, not counting click');
@@ -50,10 +56,12 @@ const ShortUrlRedirect = () => {
           visitorId = generateVisitorId();
           localStorage.setItem('visitorId', visitorId);
         }
+        console.log('Visitor ID:', visitorId);
 
         // Check if this visitor has clicked this link before
         const clickKey = `click_${code}_${visitorId}`;
         const hasClicked = localStorage.getItem(clickKey);
+        console.log('Has clicked before:', !!hasClicked);
         
         // Get the target URL from short_urls
         const { data: urlData, error: urlError } = await supabase
@@ -68,13 +76,16 @@ const ShortUrlRedirect = () => {
           return;
         }
 
+        console.log('Found URL data:', urlData);
+
         // Only register click if it's a new visitor
         if (!hasClicked) {
           try {
+            console.log('Attempting to register click...');
             // Register the click with additional metadata
             const { error: insertError } = await supabase.from('clicks').insert({
               user_id: urlData.user_id,
-              short_code: urlData.short_code,
+              short_code: code, // Use the code from URL params
               type: 'direct',
               ip_address: '0.0.0.0', // We'll get real IP from server-side tracking
               user_agent: navigator.userAgent,
@@ -99,9 +110,11 @@ const ShortUrlRedirect = () => {
               if (insertError.code === '23505') {
                 console.log('Click already recorded for this visitor');
               } else {
+                console.error('Error inserting click:', insertError);
                 throw insertError;
               }
             } else {
+              console.log('Click registered successfully');
               // Only mark as clicked in localStorage if the database insert was successful
               localStorage.setItem(clickKey, 'true');
             }
@@ -112,6 +125,7 @@ const ShortUrlRedirect = () => {
         }
 
         // Redirect to the target URL
+        console.log('Redirecting to:', urlData.target_url);
         window.location.href = urlData.target_url;
       } catch (error) {
         console.error('Error handling redirect:', error);
