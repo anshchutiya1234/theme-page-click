@@ -44,7 +44,8 @@ export const ShortUrlRedirect = () => {
         console.log('Processing redirect for code:', code);
         
         // Check if it's a bot
-        if (isBot(navigator.userAgent)) {
+        const userAgent = navigator.userAgent;
+        if (isBot(userAgent)) {
           console.log('Bot detected, not counting click');
           navigate('/404');
           return;
@@ -58,11 +59,6 @@ export const ShortUrlRedirect = () => {
         }
         console.log('Visitor ID:', visitorId);
 
-        // Check if this visitor has clicked this link before
-        const clickKey = `click_${code}_${visitorId}`;
-        const hasClicked = localStorage.getItem(clickKey);
-        console.log('Has clicked before:', !!hasClicked);
-        
         // Get the target URL from short_urls
         const { data: urlData, error: urlError } = await supabase
           .from('short_urls')
@@ -78,17 +74,30 @@ export const ShortUrlRedirect = () => {
 
         console.log('Found URL data:', urlData);
 
-        // Only register click if it's a new visitor
-        if (!hasClicked) {
+        // Check if this visitor has clicked this link before
+        const { data: existingClicks, error: existingClickError } = await supabase
+          .from('clicks')
+          .select('id')
+          .eq('short_code', code)
+          .eq('visitor_id', visitorId)
+          .eq('type', 'direct');
+
+        if (existingClickError) {
+          console.error('Error checking existing clicks:', existingClickError);
+        }
+
+        const isFirstClick = !existingClicks || existingClicks.length === 0;
+        console.log('Is first click:', isFirstClick);
+
+        if (isFirstClick) {
           try {
-            console.log('Attempting to register click...');
-            // Register the click with additional metadata
+            console.log('Registering new click...');
             const { error: insertError } = await supabase.from('clicks').insert({
               user_id: urlData.user_id,
-              short_code: code, // Use the code from URL params
+              short_code: code,
               type: 'direct',
-              ip_address: '0.0.0.0', // We'll get real IP from server-side tracking
-              user_agent: navigator.userAgent,
+              ip_address: '0.0.0.0',
+              user_agent: userAgent,
               visitor_id: visitorId,
               is_unique: true,
               referrer: document.referrer || 'direct',
@@ -106,22 +115,15 @@ export const ShortUrlRedirect = () => {
             });
 
             if (insertError) {
-              // If we get a unique constraint violation, it means the click was already recorded
-              if (insertError.code === '23505') {
-                console.log('Click already recorded for this visitor');
-              } else {
-                console.error('Error inserting click:', insertError);
-                throw insertError;
-              }
+              console.error('Error inserting click:', insertError);
             } else {
               console.log('Click registered successfully');
-              // Only mark as clicked in localStorage if the database insert was successful
-              localStorage.setItem(clickKey, 'true');
             }
           } catch (error) {
             console.error('Error recording click:', error);
-            // Continue with redirect even if click recording fails
           }
+        } else {
+          console.log('Visitor has already clicked this link');
         }
 
         // Redirect to the target URL
@@ -153,9 +155,10 @@ const PartnerCodeCard = ({ partnerCode, onClicksUpdate }: PartnerCodeCardProps) 
       if (!profile) return;
 
       try {
+        console.log('Fetching click count for user:', profile.id);
         const { data: clicks, error } = await supabase
           .from('clicks')
-          .select('id')
+          .select('id, type')
           .eq('user_id', profile.id)
           .eq('type', 'direct');
 
@@ -164,7 +167,9 @@ const PartnerCodeCard = ({ partnerCode, onClicksUpdate }: PartnerCodeCardProps) 
           return;
         }
 
-        setClickCount(clicks?.length || 0);
+        const count = clicks?.length || 0;
+        console.log('Found clicks:', count);
+        setClickCount(count);
         if (onClicksUpdate) {
           onClicksUpdate();
         }
@@ -174,24 +179,30 @@ const PartnerCodeCard = ({ partnerCode, onClicksUpdate }: PartnerCodeCardProps) 
     };
 
     fetchClickCount();
+    
     // Set up real-time subscription for clicks
     const subscription = supabase
       .channel('clicks')
       .on('postgres_changes', 
         { 
-          event: 'INSERT', 
+          event: '*',  // Listen for all events
           schema: 'public', 
           table: 'clicks',
-          filter: `user_id=eq.${profile?.id}`
+          filter: `user_id=eq.${profile?.id} AND type=eq.direct`
         }, 
-        () => {
+        (payload) => {
+          console.log('Received click update:', payload);
           fetchClickCount();
         }
       )
       .subscribe();
 
+    // Fetch click count every 30 seconds as a backup
+    const intervalId = setInterval(fetchClickCount, 30000);
+
     return () => {
       subscription.unsubscribe();
+      clearInterval(intervalId);
     };
   }, [profile, onClicksUpdate]);
 
