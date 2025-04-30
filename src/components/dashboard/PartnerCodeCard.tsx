@@ -41,8 +41,6 @@ export const ShortUrlRedirect = () => {
       }
 
       try {
-        console.log('Processing redirect for code:', code);
-
         // Get the target URL from short_urls
         const { data: urlData, error: urlError } = await supabase
           .from('short_urls')
@@ -56,52 +54,17 @@ export const ShortUrlRedirect = () => {
           return;
         }
 
-        // Use localStorage to track clicks
-        const clickKey = `click_${code}`;
-        const lastClickTime = localStorage.getItem(clickKey);
-        const totalClicksKey = `total_clicks`;
-        const totalClicks = parseInt(localStorage.getItem(totalClicksKey) || '0');
+        // Simply register the click
+        const { error: insertError } = await supabase.from('clicks').insert({
+          user_id: urlData.user_id,
+          short_code: code,
+          type: 'direct',
+          ip_address: '0.0.0.0',
+          is_unique: true
+        });
 
-        // Check if total clicks exceeded
-        if (totalClicks >= 5) {
-          console.log('Maximum total clicks reached');
-          window.location.href = urlData.target_url;
-          return;
-        }
-
-        // Check if clicked within last hour
-        if (lastClickTime) {
-          const lastClick = new Date(lastClickTime);
-          const now = new Date();
-          const hoursSinceLastClick = (now.getTime() - lastClick.getTime()) / (1000 * 60 * 60);
-          
-          if (hoursSinceLastClick < 1) {
-            console.log('Already clicked within the last hour');
-            window.location.href = urlData.target_url;
-            return;
-          }
-        }
-
-        // Register the click
-        try {
-          const { error: insertError } = await supabase.from('clicks').insert({
-            user_id: urlData.user_id,
-            short_code: code,
-            type: 'direct',
-            ip_address: 'development-ip', // We'll handle real IPs in production
-            is_unique: true
-          });
-
-          if (insertError) {
-            console.error('Error registering click:', insertError);
-          } else {
-            // Update localStorage only if click was registered successfully
-            localStorage.setItem(clickKey, new Date().toISOString());
-            localStorage.setItem(totalClicksKey, (totalClicks + 1).toString());
-            console.log('Click registered successfully');
-          }
-        } catch (error) {
-          console.error('Error recording click:', error);
+        if (insertError) {
+          console.error('Error registering click:', insertError);
         }
 
         // Redirect to target URL
@@ -165,7 +128,6 @@ const PartnerCodeCard = ({ partnerCode, onClicksUpdate }: PartnerCodeCardProps) 
           filter: `user_id=eq.${profile?.id} AND type=eq.direct`
         }, 
         () => {
-          console.log('New click detected, updating count...');
           fetchClickCount();
         }
       )
