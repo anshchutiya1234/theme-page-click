@@ -41,7 +41,9 @@ export const ShortUrlRedirect = () => {
       }
 
       try {
-        console.log('Processing redirect for code:', code);
+        console.log('=== Click Debug Info ===');
+        console.log('Short code:', code);
+        console.log('User Agent:', navigator.userAgent);
         
         // Check if it's a bot
         const userAgent = navigator.userAgent;
@@ -60,11 +62,14 @@ export const ShortUrlRedirect = () => {
         console.log('Visitor ID:', visitorId);
 
         // Get the target URL from short_urls
+        console.log('Fetching URL data from Supabase...');
         const { data: urlData, error: urlError } = await supabase
           .from('short_urls')
           .select('user_id, target_url, short_code')
           .eq('short_code', code)
           .single();
+
+        console.log('URL Data Response:', { urlData, urlError });
 
         if (urlError || !urlData) {
           console.error('Error fetching short URL:', urlError);
@@ -72,15 +77,16 @@ export const ShortUrlRedirect = () => {
           return;
         }
 
-        console.log('Found URL data:', urlData);
-
         // Check if this visitor has clicked this link before
+        console.log('Checking for existing clicks...');
         const { data: existingClicks, error: existingClickError } = await supabase
           .from('clicks')
-          .select('id')
+          .select('id, created_at')
           .eq('short_code', code)
           .eq('visitor_id', visitorId)
           .eq('type', 'direct');
+
+        console.log('Existing Clicks Response:', { existingClicks, existingClickError });
 
         if (existingClickError) {
           console.error('Error checking existing clicks:', existingClickError);
@@ -91,8 +97,8 @@ export const ShortUrlRedirect = () => {
 
         if (isFirstClick) {
           try {
-            console.log('Registering new click...');
-            const { error: insertError } = await supabase.from('clicks').insert({
+            console.log('Attempting to register new click...');
+            const clickData = {
               user_id: urlData.user_id,
               short_code: code,
               type: 'direct',
@@ -112,15 +118,35 @@ export const ShortUrlRedirect = () => {
                 platform: navigator.platform,
                 timestamp: new Date().toISOString()
               }
-            });
+            };
+            
+            console.log('Click data to insert:', clickData);
+            
+            const { error: insertError, data: insertedClick } = await supabase
+              .from('clicks')
+              .insert(clickData)
+              .select()
+              .single();
 
             if (insertError) {
               console.error('Error inserting click:', insertError);
+              console.error('Error details:', {
+                code: insertError.code,
+                message: insertError.message,
+                details: insertError.details
+              });
             } else {
-              console.log('Click registered successfully');
+              console.log('Click registered successfully:', insertedClick);
             }
           } catch (error) {
             console.error('Error recording click:', error);
+            if (error instanceof Error) {
+              console.error('Error details:', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+              });
+            }
           }
         } else {
           console.log('Visitor has already clicked this link');
@@ -131,6 +157,13 @@ export const ShortUrlRedirect = () => {
         window.location.href = urlData.target_url;
       } catch (error) {
         console.error('Error handling redirect:', error);
+        if (error instanceof Error) {
+          console.error('Error details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+          });
+        }
         navigate('/404');
       }
     };
