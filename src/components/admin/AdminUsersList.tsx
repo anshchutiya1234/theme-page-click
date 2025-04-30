@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -18,6 +17,7 @@ interface UserData {
   bonus_clicks: number;
   total_earnings: number;
   sub_partners_count: number;
+  is_admin: boolean; // Added missing is_admin property
 }
 
 const AdminUsersList = () => {
@@ -130,7 +130,7 @@ const AdminUsersList = () => {
       if (selectedUser?.id === userId) {
         setSelectedUser(prev => prev ? { ...prev, is_admin: true } : null);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error making user admin:', error);
       toast({
         title: "Error",

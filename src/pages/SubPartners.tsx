@@ -43,10 +43,10 @@ const SubPartners = () => {
         // For each sub-partner, get their clicks count and bonus clicks they generated
         const fetchedSubPartners = await Promise.all(
           usersData.map(async (user) => {
-            // Get total clicks by this sub-partner
+            // Get all clicks for this user
             const { data: clicksData, error: clicksError } = await supabase
               .from('clicks')
-              .select('type')
+              .select('type, created_at')
               .eq('user_id', user.id);
               
             if (clicksError) throw clicksError;
@@ -58,9 +58,14 @@ const SubPartners = () => {
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             
-            const recentClicksCount = clicksData?.filter(c => 
-              new Date(c.created_at) >= thirtyDaysAgo
-            ).length;
+            // Ensure clicksData exists and each item has created_at
+            const recentClicksCount = clicksData?.filter(c => {
+              // Make sure c has created_at property
+              if ('created_at' in c) {
+                return new Date(c.created_at as string) >= thirtyDaysAgo;
+              }
+              return false;
+            }).length || 0;
             
             return {
               id: user.id,
@@ -68,7 +73,7 @@ const SubPartners = () => {
               joinDate: user.joined_at,
               totalClicks,
               bonusClicksEarned,
-              status: (recentClicksCount && recentClicksCount > 0) ? 'active' : 'inactive'
+              status: (recentClicksCount > 0) ? 'active' as const : 'inactive' as const
             };
           })
         );

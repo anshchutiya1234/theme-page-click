@@ -11,9 +11,9 @@ interface WithdrawalRequest {
   username: string;
   email: string;
   amount: number;
-  payment_method: 'paypal' | 'upi' | 'crypto';
+  payment_method: string; // Changed from enum type to string to match Supabase response
   payment_details: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: string; // Changed from enum to string to match Supabase response
   created_at: string;
   admin_message?: string;
 }
@@ -51,7 +51,7 @@ const AdminWithdrawalRequests = () => {
         }
         
         // Format data
-        const formattedData = data.map(item => ({
+        const formattedData: WithdrawalRequest[] = data.map(item => ({
           id: item.id,
           user_id: item.user_id,
           username: item.users?.username || 'Unknown',

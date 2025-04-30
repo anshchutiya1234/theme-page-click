@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -41,26 +40,24 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
         const subPartnersWithStats = await Promise.all(
           usersData.map(async (user) => {
             // Get total clicks by this sub-partner
-            const { data: directClicksData, error: directClicksError } = await supabase
+            const { count: directClicksCount, error: directClicksError } = await supabase
               .from('clicks')
-              .select('count')
+              .select('*', { count: 'exact', head: false })
               .eq('user_id', user.id)
-              .eq('type', 'direct')
-              .count();
+              .eq('type', 'direct');
               
             if (directClicksError) throw directClicksError;
             
             // Get bonus clicks this partner received from this sub-partner
-            const { data: bonusClicksData, error: bonusClicksError } = await supabase
+            const { count: bonusClicksCount, error: bonusClicksError } = await supabase
               .from('clicks')
-              .select('count')
+              .select('*', { count: 'exact', head: false })
               .eq('user_id', user.id)
-              .eq('type', 'bonus')
-              .count();
+              .eq('type', 'bonus');
               
             if (bonusClicksError) throw bonusClicksError;
             
-            const totalClicks = (directClicksData?.count || 0);
+            const totalClicks = directClicksCount || 0;
             const bonusClicksEarned = Math.round(totalClicks * 0.2); // 20% of sub-partner's clicks
             
             return {
