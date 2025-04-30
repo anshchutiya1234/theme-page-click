@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface WithdrawalHistory {
   id: string;
@@ -19,6 +21,12 @@ interface WithdrawalHistory {
   message?: string;
 }
 
+interface WithdrawalEligibility {
+  is_eligible: boolean;
+  days_since_signup: number;
+  total_clicks: number;
+}
+
 const withdrawalSchema = z.object({
   paymentMethod: z.enum(['paypal', 'upi', 'crypto']),
   paymentDetails: z.string().min(1, 'Payment details are required'),
@@ -26,42 +34,21 @@ const withdrawalSchema = z.object({
 
 type WithdrawalFormData = z.infer<typeof withdrawalSchema>;
 
-const mockAccountData = {
-  signupDate: '2025-03-01',
-  totalClicks: 12500,
-  totalEarnings: '$1,250.00',
-  isEligibleForWithdrawal: true,
-  withdrawalHistory: [
-    {
-      id: '1',
-      date: '2025-03-31',
-      amount: '$500.00',
-      status: 'approved',
-      method: 'paypal',
-      details: 'trader@example.com',
-      message: 'Payment processed successfully',
-    },
-    {
-      id: '2',
-      date: '2025-03-15',
-      amount: '$300.00',
-      status: 'pending',
-      method: 'crypto',
-      details: '0x1a2b3c...',
-    },
-  ] as WithdrawalHistory[],
-};
-
 const Withdrawals = () => {
   const { toast } = useToast();
+  const { profile } = useAuth();
   const [isRequestingWithdrawal, setIsRequestingWithdrawal] = useState(false);
+  const [withdrawalHistory, setWithdrawalHistory] = useState<WithdrawalHistory[]>([]);
+  const [eligibility, setEligibility] = useState<WithdrawalEligibility | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [totalEarnings, setTotalEarnings] = useState('$0.00');
   
   const {
     register,
     handleSubmit,
     watch,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<WithdrawalFormData>({
     resolver: zodResolver(withdrawalSchema),
     defaultValues: {
@@ -72,26 +59,118 @@ const Withdrawals = () => {
   
   const selectedPaymentMethod = watch('paymentMethod');
   
-  const onSubmit = async (data: WithdrawalFormData) => {
-    try {
-      // Here would be the call to the Supabase API to request withdrawal
-      console.log('Withdrawal request:', data);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!profile) return;
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      try {
+        setIsLoading(true);
+        
+        // Fetch withdrawal eligibility
+        const { data: eligibilityData, error: eligibilityError } = await supabase
+          .rpc('check_withdrawal_eligibility', { user_id: profile.id });
+          
+        if (eligibilityError) throw eligibilityError;
+        
+        // Fetch withdrawal history
+        const { data: withdrawalsData, error: withdrawalsError } = await supabase
+          .from('withdrawals')
+          .select('*')
+          .eq('user_id', profile.id)
+          .order('created_at', { ascending: false });
+          
+        if (withdrawalsError) throw withdrawalsError;
+        
+        // Fetch total earnings
+        const { data: userStats, error: statsError } = await supabase
+          .rpc('get_user_stats', { user_id: profile.id });
+          
+        if (statsError) throw statsError;
+        
+        // Update state with fetched data
+        setEligibility(eligibilityData[0]);
+        setTotalEarnings(`$${(userStats[0]?.total_earnings || 0).toFixed(2)}`);
+        
+        // Process withdrawal history
+        const formattedWithdrawals = withdrawalsData.map((withdrawal: any) => ({
+          id: withdrawal.id,
+          date: withdrawal.created_at,
+          amount: `$${withdrawal.amount.toFixed(2)}`,
+          status: withdrawal.status,
+          method: withdrawal.payment_method,
+          details: withdrawal.payment_details,
+          message: withdrawal.admin_message
+        }));
+        
+        setWithdrawalHistory(formattedWithdrawals);
+      } catch (error) {
+        console.error('Error fetching withdrawal data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load withdrawal data. Please refresh the page.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [profile, toast]);
+
+  const onSubmit = async (data: WithdrawalFormData) => {
+    if (!profile || !eligibility) return;
+    
+    try {
+      const clickCount = eligibility.total_clicks;
+      const amount = clickCount * 0.10; // $0.10 per click
+      
+      // Insert withdrawal request
+      const { error } = await supabase
+        .from('withdrawals')
+        .insert({
+          user_id: profile.id,
+          click_count: clickCount,
+          amount: amount,
+          payment_method: data.paymentMethod,
+          payment_details: data.paymentDetails
+        });
+        
+      if (error) throw error;
       
       toast({
         title: "Success!",
         description: "Your withdrawal request has been submitted.",
       });
       
+      // Refresh withdrawal history
+      const { data: updatedWithdrawals } = await supabase
+        .from('withdrawals')
+        .select('*')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false });
+        
+      if (updatedWithdrawals) {
+        const formattedWithdrawals = updatedWithdrawals.map((withdrawal: any) => ({
+          id: withdrawal.id,
+          date: withdrawal.created_at,
+          amount: `$${withdrawal.amount.toFixed(2)}`,
+          status: withdrawal.status,
+          method: withdrawal.payment_method,
+          details: withdrawal.payment_details,
+          message: withdrawal.admin_message
+        }));
+        
+        setWithdrawalHistory(formattedWithdrawals);
+      }
+      
       reset();
       setIsRequestingWithdrawal(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error requesting withdrawal:', error);
       toast({
         title: "Error",
-        description: "Failed to request withdrawal. Please try again.",
+        description: error.message || "Failed to request withdrawal. Please try again.",
         variant: "destructive",
       });
     }
@@ -109,11 +188,16 @@ const Withdrawals = () => {
     crypto: 'Your wallet address',
   };
 
-  // Calculate days since signup
-  const signupDate = new Date(mockAccountData.signupDate);
-  const today = new Date();
-  const daysSinceSignup = Math.floor((today.getTime() - signupDate.getTime()) / (1000 * 60 * 60 * 24));
-  const daysUntilWithdrawal = Math.max(0, 30 - daysSinceSignup);
+  if (isLoading || !profile || !eligibility) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin h-8 w-8 border-4 border-partner-purple border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  // Calculate days until withdrawal eligibility
+  const daysUntilWithdrawal = Math.max(0, 30 - eligibility.days_since_signup);
   
   return (
     <div className="space-y-8">
@@ -127,18 +211,18 @@ const Withdrawals = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="font-semibold text-gray-500 text-sm">TOTAL CLICKS</h3>
-          <p className="text-3xl font-bold mt-1">{mockAccountData.totalClicks.toLocaleString()}</p>
+          <p className="text-3xl font-bold mt-1">{eligibility.total_clicks.toLocaleString()}</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="font-semibold text-gray-500 text-sm">TOTAL EARNINGS</h3>
-          <p className="text-3xl font-bold mt-1">{mockAccountData.totalEarnings}</p>
+          <p className="text-3xl font-bold mt-1">{totalEarnings}</p>
           <p className="text-sm text-gray-500 mt-2">$0.10 per click</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="font-semibold text-gray-500 text-sm">WITHDRAWAL ELIGIBILITY</h3>
-          {mockAccountData.isEligibleForWithdrawal ? (
+          {eligibility.is_eligible ? (
             <>
               <p className="text-green-600 font-bold mt-1">Eligible</p>
               <p className="text-sm text-gray-500 mt-2">
@@ -164,11 +248,11 @@ const Withdrawals = () => {
               <div className="mt-4 w-full bg-gray-200 rounded-full h-2.5">
                 <div 
                   className="bg-amber-600 h-2.5 rounded-full" 
-                  style={{ width: `${Math.min(100, (mockAccountData.totalClicks / 10000) * 100)}%` }}
+                  style={{ width: `${Math.min(100, (eligibility.total_clicks / 10000) * 100)}%` }}
                 ></div>
               </div>
               <p className="text-xs text-gray-500 mt-1 text-right">
-                {mockAccountData.totalClicks.toLocaleString()} / 10,000 clicks
+                {eligibility.total_clicks.toLocaleString()} / 10,000 clicks
               </p>
             </>
           )}
@@ -225,7 +309,7 @@ const Withdrawals = () => {
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex justify-between items-center">
                 <span className="font-medium">Amount to withdraw:</span>
-                <span className="font-bold">{mockAccountData.totalEarnings}</span>
+                <span className="font-bold">{totalEarnings}</span>
               </div>
               <p className="text-sm text-gray-500 mt-2">
                 Withdrawals are typically processed within 7 business days.
@@ -236,8 +320,9 @@ const Withdrawals = () => {
               <Button
                 type="submit"
                 className="flex-1"
+                disabled={isSubmitting}
               >
-                Request Withdrawal
+                {isSubmitting ? 'Processing...' : 'Request Withdrawal'}
               </Button>
               <Button
                 type="button"
@@ -257,7 +342,7 @@ const Withdrawals = () => {
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-6">Withdrawal History</h2>
         
-        {mockAccountData.withdrawalHistory.length > 0 ? (
+        {withdrawalHistory.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -270,7 +355,7 @@ const Withdrawals = () => {
                 </tr>
               </thead>
               <tbody>
-                {mockAccountData.withdrawalHistory.map((withdrawal) => (
+                {withdrawalHistory.map((withdrawal) => (
                   <tr key={withdrawal.id} className="border-b hover:bg-gray-50">
                     <td className="py-4">
                       {new Date(withdrawal.date).toLocaleDateString()}

@@ -1,1 +1,5 @@
+
 project_id = "ekfgfyjtfgjrfwbkoifd"
+
+[functions.track-click]
+verify_jwt = false

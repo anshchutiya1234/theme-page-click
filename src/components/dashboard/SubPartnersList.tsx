@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SubPartner {
   id: string;
@@ -8,15 +9,91 @@ interface SubPartner {
   bonusClicksEarned: number;
 }
 
-const demoSubPartners: SubPartner[] = [
-  { id: '1', username: 'trader_max', totalClicks: 7825, bonusClicksEarned: 1565 },
-  { id: '2', username: 'crypto_sarah', totalClicks: 5210, bonusClicksEarned: 1042 },
-  { id: '3', username: 'investorjohn', totalClicks: 4150, bonusClicksEarned: 830 },
-  { id: '4', username: 'market_guru', totalClicks: 2750, bonusClicksEarned: 550 },
-  { id: '5', username: 'finance_pro', totalClicks: 1980, bonusClicksEarned: 396 },
-];
+interface SubPartnersListProps {
+  partnerCode: string;
+  limit?: number;
+}
 
-const SubPartnersList = () => {
+const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
+  const [subPartners, setSubPartners] = useState<SubPartner[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSubPartners = async () => {
+      try {
+        // First get list of users that have referred_by matching this partner code
+        const { data: usersData, error: usersError } = await supabase
+          .from('users')
+          .select('id, username')
+          .eq('referred_by', partnerCode)
+          .order('joined_at', { ascending: false })
+          .limit(limit);
+
+        if (usersError) throw usersError;
+        
+        if (!usersData || usersData.length === 0) {
+          setSubPartners([]);
+          setIsLoading(false);
+          return;
+        }
+        
+        // For each sub-partner, get their clicks count and bonus clicks they generated
+        const subPartnersWithStats = await Promise.all(
+          usersData.map(async (user) => {
+            // Get total clicks by this sub-partner
+            const { data: directClicksData, error: directClicksError } = await supabase
+              .from('clicks')
+              .select('count')
+              .eq('user_id', user.id)
+              .eq('type', 'direct')
+              .count();
+              
+            if (directClicksError) throw directClicksError;
+            
+            // Get bonus clicks this partner received from this sub-partner
+            const { data: bonusClicksData, error: bonusClicksError } = await supabase
+              .from('clicks')
+              .select('count')
+              .eq('user_id', user.id)
+              .eq('type', 'bonus')
+              .count();
+              
+            if (bonusClicksError) throw bonusClicksError;
+            
+            const totalClicks = (directClicksData?.count || 0);
+            const bonusClicksEarned = Math.round(totalClicks * 0.2); // 20% of sub-partner's clicks
+            
+            return {
+              id: user.id,
+              username: user.username,
+              totalClicks,
+              bonusClicksEarned
+            };
+          })
+        );
+        
+        setSubPartners(subPartnersWithStats);
+      } catch (error) {
+        console.error('Error fetching sub-partners:', error);
+        setSubPartners([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSubPartners();
+  }, [partnerCode, limit]);
+
+  if (isLoading) {
+    return (
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="flex justify-center items-center h-32">
+          <div className="animate-spin h-8 w-8 border-4 border-partner-purple border-t-transparent rounded-full"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-lg font-semibold mb-4">Your Sub-Partners</h2>
@@ -31,8 +108,8 @@ const SubPartnersList = () => {
             </tr>
           </thead>
           <tbody>
-            {demoSubPartners.length > 0 ? (
-              demoSubPartners.map((partner) => (
+            {subPartners.length > 0 ? (
+              subPartners.map((partner) => (
                 <tr key={partner.id} className="border-b hover:bg-gray-50">
                   <td className="py-4 font-medium">@{partner.username}</td>
                   <td className="py-4 text-right">{partner.totalClicks.toLocaleString()}</td>
@@ -50,7 +127,7 @@ const SubPartnersList = () => {
         </table>
       </div>
       
-      {demoSubPartners.length > 0 && (
+      {subPartners.length > 0 && (
         <div className="mt-4 text-sm text-gray-500">
           <p>You earn 20% of all clicks from your sub-partners.</p>
         </div>

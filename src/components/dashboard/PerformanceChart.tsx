@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -10,50 +10,170 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import { supabase } from '@/integrations/supabase/client';
 
-const data = [
-  {
-    name: 'Jan',
-    directClicks: 650,
-    bonusClicks: 150,
-  },
-  {
-    name: 'Feb',
-    directClicks: 920,
-    bonusClicks: 230,
-  },
-  {
-    name: 'Mar',
-    directClicks: 1450,
-    bonusClicks: 320,
-  },
-  {
-    name: 'Apr',
-    directClicks: 1200,
-    bonusClicks: 400,
-  },
-  {
-    name: 'May',
-    directClicks: 1800,
-    bonusClicks: 500,
-  },
-  {
-    name: 'Jun',
-    directClicks: 2500,
-    bonusClicks: 580,
-  },
-];
-
-interface PerformanceChartProps {
-  selectedRange?: string;
-  onRangeChange?: (range: string) => void;
+interface ChartData {
+  name: string;
+  directClicks: number;
+  bonusClicks: number;
 }
 
-const PerformanceChart = ({ selectedRange = '6M', onRangeChange }: PerformanceChartProps) => {
+interface PerformanceChartProps {
+  userId: string;
+}
+
+const PerformanceChart = ({ userId }: PerformanceChartProps) => {
+  const [selectedRange, setSelectedRange] = useState('6M');
+  const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const ranges = ['1W', '1M', '3M', '6M', '1Y', 'ALL'];
 
-  const handleRangeChange = (range: string) => {
-    if (onRangeChange) onRangeChange(range);
+  useEffect(() => {
+    const fetchChartData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Calculate date range based on selected option
+        let startDate = new Date();
+        switch (selectedRange) {
+          case '1W':
+            startDate.setDate(startDate.getDate() - 7);
+            break;
+          case '1M':
+            startDate.setMonth(startDate.getMonth() - 1);
+            break;
+          case '3M':
+            startDate.setMonth(startDate.getMonth() - 3);
+            break;
+          case '6M':
+            startDate.setMonth(startDate.getMonth() - 6);
+            break;
+          case '1Y':
+            startDate.setFullYear(startDate.getFullYear() - 1);
+            break;
+          case 'ALL':
+            // No filter, get all data
+            startDate = new Date(0); // Jan 1, 1970
+            break;
+          default:
+            startDate.setMonth(startDate.getMonth() - 6);
+        }
+
+        // Fetch clicks from Supabase
+        const { data: clicksData, error } = await supabase
+          .from('clicks')
+          .select('type, created_at')
+          .eq('user_id', userId)
+          .gte('created_at', startDate.toISOString());
+
+        if (error) throw error;
+        
+        // Process the data for chart display
+        const processedData = processClicksData(clicksData || [], selectedRange);
+        setChartData(processedData);
+      } catch (error) {
+        console.error("Error fetching chart data:", error);
+        // Fallback to default data if error occurs
+        setChartData(generateFallbackData());
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchChartData();
+  }, [userId, selectedRange]);
+
+  const processClicksData = (clicks: any[], range: string): ChartData[] => {
+    if (!clicks.length) return generateFallbackData();
+
+    const dateFormat = getDateFormat(range);
+    const dataMap: Record<string, { directClicks: number, bonusClicks: number }> = {};
+    
+    // Initialize dataMap with empty values
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const now = new Date();
+    
+    if (range === '1W') {
+      // For weekly view, show last 7 days
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const key = date.toLocaleDateString(undefined, { weekday: 'short' });
+        dataMap[key] = { directClicks: 0, bonusClicks: 0 };
+      }
+    } else if (range === '1M') {
+      // For monthly view, show last 30 days by day
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const key = date.getDate().toString();
+        dataMap[key] = { directClicks: 0, bonusClicks: 0 };
+      }
+    } else {
+      // For other ranges, group by month
+      let monthsToShow = 6;
+      if (range === '3M') monthsToShow = 3;
+      if (range === '1Y') monthsToShow = 12;
+      if (range === 'ALL') monthsToShow = 12; // Show max 12 months for "ALL"
+      
+      for (let i = monthsToShow - 1; i >= 0; i--) {
+        const monthIndex = (now.getMonth() - i + 12) % 12;
+        dataMap[months[monthIndex]] = { directClicks: 0, bonusClicks: 0 };
+      }
+    }
+
+    // Process clicks data
+    clicks.forEach(click => {
+      const date = new Date(click.created_at);
+      let key;
+      
+      if (range === '1W') {
+        key = date.toLocaleDateString(undefined, { weekday: 'short' });
+      } else if (range === '1M') {
+        key = date.getDate().toString();
+      } else {
+        key = months[date.getMonth()];
+      }
+      
+      if (dataMap[key]) {
+        if (click.type === 'direct') {
+          dataMap[key].directClicks++;
+        } else {
+          dataMap[key].bonusClicks++;
+        }
+      }
+    });
+
+    // Convert to chart data format
+    return Object.keys(dataMap).map(key => ({
+      name: key,
+      directClicks: dataMap[key].directClicks,
+      bonusClicks: dataMap[key].bonusClicks
+    }));
+  };
+
+  const getDateFormat = (range: string): Intl.DateTimeFormatOptions => {
+    switch (range) {
+      case '1W':
+        return { weekday: 'short' };
+      case '1M':
+        return { day: 'numeric' };
+      default:
+        return { month: 'short' };
+    }
+  };
+
+  const generateFallbackData = (): ChartData[] => {
+    // Default mock data in case of no real data
+    return [
+      { name: 'Jan', directClicks: 650, bonusClicks: 150 },
+      { name: 'Feb', directClicks: 920, bonusClicks: 230 },
+      { name: 'Mar', directClicks: 1450, bonusClicks: 320 },
+      { name: 'Apr', directClicks: 1200, bonusClicks: 400 },
+      { name: 'May', directClicks: 1800, bonusClicks: 500 },
+      { name: 'Jun', directClicks: 2500, bonusClicks: 580 },
+    ];
   };
 
   return (
@@ -69,7 +189,7 @@ const PerformanceChart = ({ selectedRange = '6M', onRangeChange }: PerformanceCh
                   ? 'bg-partner-purple text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
-              onClick={() => handleRangeChange(range)}
+              onClick={() => setSelectedRange(range)}
             >
               {range}
             </button>
@@ -78,49 +198,55 @@ const PerformanceChart = ({ selectedRange = '6M', onRangeChange }: PerformanceCh
       </div>
       
       <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis 
-              dataKey="name" 
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 12, fill: '#666' }}
-            />
-            <YAxis 
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 12, fill: '#666' }}
-            />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: '#fff',
-                border: '1px solid #e2e8f0',
-                borderRadius: '0.375rem',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-              }} 
-            />
-            <Legend verticalAlign="top" height={36} />
-            <Line
-              type="monotone"
-              dataKey="directClicks"
-              name="Direct Clicks"
-              stroke="#5E51E7"
-              strokeWidth={3}
-              dot={{ r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="bonusClicks"
-              name="Bonus Clicks"
-              stroke="#3B82F6"
-              strokeWidth={3}
-              dot={{ r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-full">
+            <div className="animate-spin h-8 w-8 border-4 border-partner-purple border-t-transparent rounded-full"></div>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis 
+                dataKey="name" 
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: '#666' }}
+              />
+              <YAxis 
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: '#666' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#fff',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '0.375rem',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                }} 
+              />
+              <Legend verticalAlign="top" height={36} />
+              <Line
+                type="monotone"
+                dataKey="directClicks"
+                name="Direct Clicks"
+                stroke="#5E51E7"
+                strokeWidth={3}
+                dot={{ r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="bonusClicks"
+                name="Bonus Clicks"
+                stroke="#3B82F6"
+                strokeWidth={3}
+                dot={{ r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );

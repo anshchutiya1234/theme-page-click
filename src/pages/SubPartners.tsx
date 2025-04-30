@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SubPartner {
   id: string;
@@ -12,29 +13,86 @@ interface SubPartner {
   status: 'active' | 'inactive';
 }
 
-const mockSubPartners: SubPartner[] = [
-  { id: '1', username: 'trader_max', joinDate: '2025-03-15', totalClicks: 7825, bonusClicksEarned: 1565, status: 'active' },
-  { id: '2', username: 'crypto_sarah', joinDate: '2025-03-18', totalClicks: 5210, bonusClicksEarned: 1042, status: 'active' },
-  { id: '3', username: 'investorjohn', joinDate: '2025-02-25', totalClicks: 4150, bonusClicksEarned: 830, status: 'active' },
-  { id: '4', username: 'market_guru', joinDate: '2025-02-10', totalClicks: 2750, bonusClicksEarned: 550, status: 'active' },
-  { id: '5', username: 'finance_pro', joinDate: '2025-02-05', totalClicks: 1980, bonusClicksEarned: 396, status: 'active' },
-  { id: '6', username: 'stock_master', joinDate: '2025-01-28', totalClicks: 1650, bonusClicksEarned: 330, status: 'inactive' },
-  { id: '7', username: 'trading_queen', joinDate: '2025-01-20', totalClicks: 1320, bonusClicksEarned: 264, status: 'active' },
-  { id: '8', username: 'day_trader', joinDate: '2025-01-15', totalClicks: 950, bonusClicksEarned: 190, status: 'inactive' },
-];
-
 const SubPartners = () => {
+  const { profile } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredPartners, setFilteredPartners] = useState(mockSubPartners);
+  const [subPartners, setSubPartners] = useState<SubPartner[]>([]);
+  const [filteredPartners, setFilteredPartners] = useState<SubPartner[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchSubPartners = async () => {
+      if (!profile) return;
+      
+      try {
+        // First get list of users that have referred_by matching this partner code
+        const { data: usersData, error: usersError } = await supabase
+          .from('users')
+          .select('id, username, joined_at')
+          .eq('referred_by', profile.partner_code);
+
+        if (usersError) throw usersError;
+        
+        if (!usersData || usersData.length === 0) {
+          setSubPartners([]);
+          setFilteredPartners([]);
+          setIsLoading(false);
+          return;
+        }
+        
+        // For each sub-partner, get their clicks count and bonus clicks they generated
+        const fetchedSubPartners = await Promise.all(
+          usersData.map(async (user) => {
+            // Get total clicks by this sub-partner
+            const { data: clicksData, error: clicksError } = await supabase
+              .from('clicks')
+              .select('type')
+              .eq('user_id', user.id);
+              
+            if (clicksError) throw clicksError;
+            
+            const totalClicks = clicksData?.filter(c => c.type === 'direct').length || 0;
+            const bonusClicksEarned = clicksData?.filter(c => c.type === 'bonus').length || 0;
+            
+            // Determine if the sub-partner is active (had activity in the last 30 days)
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            const recentClicksCount = clicksData?.filter(c => 
+              new Date(c.created_at) >= thirtyDaysAgo
+            ).length;
+            
+            return {
+              id: user.id,
+              username: user.username,
+              joinDate: user.joined_at,
+              totalClicks,
+              bonusClicksEarned,
+              status: (recentClicksCount && recentClicksCount > 0) ? 'active' : 'inactive'
+            };
+          })
+        );
+        
+        setSubPartners(fetchedSubPartners);
+        setFilteredPartners(fetchedSubPartners);
+      } catch (error) {
+        console.error('Error fetching sub-partners:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSubPartners();
+  }, [profile]);
   
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
     setSearchTerm(term);
     
     if (!term.trim()) {
-      setFilteredPartners(mockSubPartners);
+      setFilteredPartners(subPartners);
     } else {
-      const filtered = mockSubPartners.filter(partner => 
+      const filtered = subPartners.filter(partner => 
         partner.username.toLowerCase().includes(term.toLowerCase())
       );
       setFilteredPartners(filtered);
@@ -45,6 +103,14 @@ const SubPartners = () => {
     (sum, partner) => sum + partner.bonusClicksEarned, 
     0
   );
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin h-8 w-8 border-4 border-partner-purple border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

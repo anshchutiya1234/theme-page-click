@@ -9,7 +9,7 @@ interface PartnerCodeCardProps {
 
 const PartnerCodeCard = ({ partnerCode }: PartnerCodeCardProps) => {
   const { toast } = useToast();
-  const baseUrl = 'https://tradingcircle.space/join?ref=';
+  const baseUrl = window.location.origin + '/join?ref=';
   const referralLink = `${baseUrl}${partnerCode}`;
 
   const copyToClipboard = (text: string, successMessage: string) => {
@@ -28,6 +28,33 @@ const PartnerCodeCard = ({ partnerCode }: PartnerCodeCardProps) => {
         });
       }
     );
+  };
+
+  const trackClick = async () => {
+    try {
+      // Call the edge function to track a click when sharing
+      await fetch(`${window.location.origin}/functions/v1/track-click`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          referralCode: partnerCode 
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to track click:", error);
+    }
+  };
+
+  const shareToTwitter = () => {
+    const shareText = `Join the Trading Circle Partner Program and earn $1,000 per 10,000 clicks. Use my code ${partnerCode} or click the link below`;
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(referralLink)}`;
+    
+    // Track sharing as a click
+    trackClick();
+    
+    window.open(shareUrl, '_blank');
   };
 
   return (
@@ -63,9 +90,7 @@ const PartnerCodeCard = ({ partnerCode }: PartnerCodeCardProps) => {
         
         <Button 
           variant="outline"
-          onClick={() => {
-            window.open(`https://twitter.com/intent/tweet?text=Join%20the%20Trading%20Circle%20Partner%20Program%20and%20earn%20$1,000%20per%2010,000%20clicks.%20Use%20my%20code%20${partnerCode}%20or%20click%20the%20link%20below%0A%0A&url=${encodeURIComponent(referralLink)}`, '_blank');
-          }}
+          onClick={shareToTwitter}
         >
           Share
         </Button>

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import Navbar from '@/components/layout/Navbar';
+import { useAuth } from '@/contexts/AuthContext';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -25,6 +26,7 @@ const Join = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [referralCode, setReferralCode] = useState<string>('');
+  const { signUp, user } = useAuth();
   
   const {
     register,
@@ -37,6 +39,13 @@ const Join = () => {
       referralCode: '',
     },
   });
+
+  // If already logged in, redirect to dashboard
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     // Extract referral code from URL if present
@@ -61,26 +70,13 @@ const Join = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
-      // Here would be the call to the Supabase API to create a user
-      console.log('Form submitted:', data);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Success!",
-        description: "Your account has been created successfully.",
+      await signUp(data.email, data.password, {
+        name: data.name,
+        instagramUsername: data.instagramUsername,
+        referralCode: data.referralCode,
       });
-      
-      // Redirect to dashboard
-      navigate('/dashboard');
     } catch (error) {
       console.error('Error submitting form:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create account. Please try again.",
-        variant: "destructive",
-      });
     }
   };
 

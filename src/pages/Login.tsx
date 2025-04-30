@@ -1,14 +1,14 @@
 
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/components/ui/use-toast';
 import Navbar from '@/components/layout/Navbar';
+import { useAuth } from '@/contexts/AuthContext';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -18,8 +18,9 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const Login = () => {
-  const { toast } = useToast();
+  const location = useLocation();
   const navigate = useNavigate();
+  const { signIn, user } = useAuth();
   
   const {
     register,
@@ -29,29 +30,15 @@ const Login = () => {
     resolver: zodResolver(formSchema),
   });
 
-  const onSubmit = async (data: FormData) => {
-    try {
-      // Here would be the call to the Supabase API to log in
-      console.log('Login attempt:', data);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Success!",
-        description: "You've been logged in successfully.",
-      });
-      
-      // Redirect to dashboard
+  // If already logged in, redirect to dashboard
+  useEffect(() => {
+    if (user) {
       navigate('/dashboard');
-    } catch (error) {
-      console.error('Error logging in:', error);
-      toast({
-        title: "Error",
-        description: "Failed to log in. Please check your credentials and try again.",
-        variant: "destructive",
-      });
     }
+  }, [user, navigate]);
+
+  const onSubmit = async (data: FormData) => {
+    await signIn(data.email, data.password);
   };
 
   return (

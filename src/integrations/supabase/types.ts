@@ -9,13 +9,173 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      clicks: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string
+          source_user_id: string | null
+          type: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address: string
+          source_user_id?: string | null
+          type: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string
+          source_user_id?: string | null
+          type?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clicks_source_user_id_fkey"
+            columns: ["source_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clicks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          email: string
+          id: string
+          instagram_username: string
+          is_admin: boolean
+          joined_at: string
+          name: string
+          partner_code: string
+          referred_by: string | null
+          username: string
+        }
+        Insert: {
+          email: string
+          id: string
+          instagram_username: string
+          is_admin?: boolean
+          joined_at?: string
+          name: string
+          partner_code: string
+          referred_by?: string | null
+          username: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          instagram_username?: string
+          is_admin?: boolean
+          joined_at?: string
+          name?: string
+          partner_code?: string
+          referred_by?: string | null
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["partner_code"]
+          },
+        ]
+      }
+      withdrawals: {
+        Row: {
+          admin_message: string | null
+          amount: number
+          click_count: number
+          created_at: string
+          id: string
+          payment_details: string
+          payment_method: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          admin_message?: string | null
+          amount: number
+          click_count: number
+          created_at?: string
+          id?: string
+          payment_details: string
+          payment_method: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          admin_message?: string | null
+          amount?: number
+          click_count?: number
+          created_at?: string
+          id?: string
+          payment_details?: string
+          payment_method?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_withdrawal_eligibility: {
+        Args: { user_id: string }
+        Returns: {
+          is_eligible: boolean
+          days_since_signup: number
+          total_clicks: number
+        }[]
+      }
+      generate_unique_partner_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_user_stats: {
+        Args: { user_id: string }
+        Returns: {
+          direct_clicks: number
+          bonus_clicks: number
+          total_earnings: number
+          sub_partners_count: number
+        }[]
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      register_click: {
+        Args: { referrer_code: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
