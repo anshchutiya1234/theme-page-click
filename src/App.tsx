@@ -1,8 +1,9 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams, useEffect } from "react-router-dom";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -23,8 +24,24 @@ const queryClient = new QueryClient();
 
 const ShortUrlRedirect = () => {
   const { code } = useParams();
-  const edgeFunctionsUrl = import.meta.env.VITE_EDGE_FUNCTIONS_URL || '/functions/v1';
-  return <Navigate to={`${edgeFunctionsUrl}/redirect/${code}`} replace />;
+  const edgeFunctionsUrl = import.meta.env.VITE_EDGE_FUNCTIONS_URL || 'https://ekfgfyjtfgjrfwbkoifd.supabase.co/functions/v1';
+  
+  useEffect(() => {
+    // Redirect to the edge function URL directly in the browser
+    if (code) {
+      window.location.href = `${edgeFunctionsUrl}/redirect/${code}`;
+    }
+  }, [code, edgeFunctionsUrl]);
+
+  // Show loading indicator while redirecting
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="text-center">
+        <div className="animate-spin h-8 w-8 border-4 border-partner-purple border-t-transparent rounded-full mx-auto mb-4"></div>
+        <p>Redirecting...</p>
+      </div>
+    </div>
+  );
 };
 
 const App = () => (

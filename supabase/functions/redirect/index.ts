@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.131.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 
@@ -28,6 +29,8 @@ serve(async (req) => {
       );
     }
 
+    console.log(`Processing redirect for short code: ${code}`);
+
     // Create Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
@@ -41,6 +44,7 @@ serve(async (req) => {
       .single();
 
     if (urlError || !urlData) {
+      console.error(`Error fetching URL data: ${urlError?.message || 'No data found'}`);
       return new Response(
         JSON.stringify({ error: "Invalid short code" }),
         {
@@ -50,15 +54,35 @@ serve(async (req) => {
       );
     }
 
+    console.log(`Found target URL: ${urlData.target_url} for user: ${urlData.user_id}`);
+
     // Register the click
-    await supabase.from('clicks').insert({
+    const { error: clickError } = await supabase.from('clicks').insert({
       user_id: urlData.user_id,
       type: 'direct',
       ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '0.0.0.0',
       user_agent: req.headers.get('user-agent') || 'Unknown'
     });
 
+    if (clickError) {
+      console.error(`Error recording click: ${clickError.message}`);
+    } else {
+      console.log(`Successfully recorded click for user: ${urlData.user_id}`);
+    }
+
+    // Also call register_click RPC to handle bonus clicks if applicable
+    const referrerCode = new URL(urlData.target_url).searchParams.get('ref');
+    if (referrerCode) {
+      const { error: rpcError } = await supabase.rpc('register_click', { referrer_code: referrerCode });
+      if (rpcError) {
+        console.error(`Error calling register_click: ${rpcError.message}`);
+      } else {
+        console.log(`Successfully called register_click for code: ${referrerCode}`);
+      }
+    }
+
     // Redirect to the target URL
+    console.log(`Redirecting to: ${urlData.target_url}`);
     return new Response(null, {
       headers: {
         ...corsHeaders,
@@ -70,7 +94,7 @@ serve(async (req) => {
       status: 302,
     });
   } catch (error) {
-    console.error("Error:", error);
+    console.error(`Unexpected error: ${error.message}`);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
@@ -79,4 +103,4 @@ serve(async (req) => {
       }
     );
   }
-}); 
+});

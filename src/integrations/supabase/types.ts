@@ -54,6 +54,45 @@ export type Database = {
           },
         ]
       }
+      short_urls: {
+        Row: {
+          created_at: string | null
+          id: string
+          short_code: string
+          target_url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          short_code: string
+          target_url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          short_code?: string
+          target_url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "short_urls_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           email: string
@@ -142,38 +181,6 @@ export type Database = {
           },
         ]
       }
-      short_urls: {
-        Row: {
-          id: string
-          user_id: string
-          short_code: string
-          target_url: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          short_code: string
-          target_url: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          short_code?: string
-          target_url?: string
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "short_urls_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
     }
     Views: {
       [_ in never]: never
@@ -187,7 +194,15 @@ export type Database = {
           total_clicks: number
         }[]
       }
+      clear_direct_clicks: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       generate_unique_partner_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_unique_short_code: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
@@ -207,10 +222,6 @@ export type Database = {
       register_click: {
         Args: { referrer_code: string }
         Returns: boolean
-      }
-      generate_unique_short_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
       }
     }
     Enums: {

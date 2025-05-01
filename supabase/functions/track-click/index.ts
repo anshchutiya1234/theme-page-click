@@ -28,6 +28,8 @@ serve(async (req) => {
       );
     }
 
+    console.log(`Processing click tracking for referral code: ${code}`);
+
     // Create Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
@@ -38,7 +40,12 @@ serve(async (req) => {
       referrer_code: code,
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error(`Error registering click: ${error.message}`);
+      throw error;
+    }
+
+    console.log(`Click registration result: ${data ? 'successful' : 'failed'}`);
 
     return new Response(
       JSON.stringify({ success: true, registered: data }),
@@ -48,7 +55,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Error:", error);
+    console.error(`Unexpected error in track-click: ${error.message}`);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       {
