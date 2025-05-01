@@ -19,6 +19,7 @@ import SubPartners from "./pages/SubPartners";
 import Settings from "./pages/Settings";
 import Withdrawals from "./pages/Withdrawals";
 import Admin from "./pages/Admin";
+import PartnerEarnings from "./pages/PartnerEarnings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -71,6 +72,7 @@ const App = () => (
               <Route path="/withdrawals" element={<Withdrawals />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/partner-earnings" element={<PartnerEarnings />} />
             </Route>
             
             <Route path="*" element={<NotFound />} />

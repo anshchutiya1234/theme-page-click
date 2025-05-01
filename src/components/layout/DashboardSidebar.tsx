@@ -1,13 +1,16 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChartBarIcon, Cog6ToothIcon, CurrencyDollarIcon, UserGroupIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { ChartBarIcon, Cog6ToothIcon, CurrencyDollarIcon, UserGroupIcon, ShieldCheckIcon, CalculatorIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/contexts/AuthContext';
+
 const DashboardSidebar = () => {
   const location = useLocation();
   const {
     profile,
     signOut
   } = useAuth();
+  
   const baseNavigation = [{
     name: 'Dashboard',
     href: '/dashboard',
@@ -21,6 +24,10 @@ const DashboardSidebar = () => {
     href: '/withdrawals',
     icon: CurrencyDollarIcon
   }, {
+    name: 'Partner Earnings',
+    href: '/partner-earnings',
+    icon: CalculatorIcon
+  }, {
     name: 'Settings',
     href: '/settings',
     icon: Cog6ToothIcon
@@ -32,6 +39,7 @@ const DashboardSidebar = () => {
     href: '/admin',
     icon: ShieldCheckIcon
   }] : baseNavigation;
+  
   return <aside className="fixed inset-y-0 left-0 z-10 hidden w-64 flex-col border-r bg-white lg:flex">
       <div className="border-b p-4">
         <Link to="/dashboard" className="flex items-center gap-2">
@@ -69,4 +77,5 @@ const DashboardSidebar = () => {
       </div>
     </aside>;
 };
+
 export default DashboardSidebar;
