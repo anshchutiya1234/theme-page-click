@@ -70,15 +70,14 @@ serve(async (req) => {
       console.log(`Successfully recorded click for user: ${urlData.user_id}`);
     }
 
-    // Also call register_click RPC to handle bonus clicks if applicable
-    const referrerCode = new URL(urlData.target_url).searchParams.get('ref');
+    // Get the referrer code from the target URL without calling register_click
+    // This avoids the duplicate click registration
+    const targetUrl = new URL(urlData.target_url);
+    const referrerCode = targetUrl.searchParams.get('ref');
+    
     if (referrerCode) {
-      const { error: rpcError } = await supabase.rpc('register_click', { referrer_code: referrerCode });
-      if (rpcError) {
-        console.error(`Error calling register_click: ${rpcError.message}`);
-      } else {
-        console.log(`Successfully called register_click for code: ${referrerCode}`);
-      }
+      console.log(`Referral code found in target URL: ${referrerCode}, but not calling register_click to avoid duplication`);
+      // We don't call register_click here anymore to avoid duplicate registration
     }
 
     // Redirect to the target URL
