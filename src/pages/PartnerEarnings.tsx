@@ -110,7 +110,7 @@ const PartnerEarnings = () => {
     <div className="container max-w-md mx-auto py-10">
       <Card>
         <CardHeader>
-          <CardTitle>Partner Earnings</CardTitle>
+          <CardTitle>Earnings Leaderboard</CardTitle>
           <CardDescription>
             Enter a partner code to view their earnings for {monthName}
           </CardDescription>

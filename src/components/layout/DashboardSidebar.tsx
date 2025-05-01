@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChartBarIcon, Cog6ToothIcon, CurrencyDollarIcon, UserGroupIcon, ShieldCheckIcon, CalculatorIcon } from '@heroicons/react/24/outline';
+import { ChartBarIcon, Cog6ToothIcon, CurrencyDollarIcon, UserGroupIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { TrendingUp } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const DashboardSidebar = () => {
@@ -24,9 +25,9 @@ const DashboardSidebar = () => {
     href: '/withdrawals',
     icon: CurrencyDollarIcon
   }, {
-    name: 'Partner Earnings',
+    name: 'Earnings Leaderboard',
     href: '/partner-earnings',
-    icon: CalculatorIcon
+    icon: TrendingUp
   }, {
     name: 'Settings',
     href: '/settings',
@@ -54,7 +55,10 @@ const DashboardSidebar = () => {
           const isActive = location.pathname === item.href;
           return <li key={item.name}>
                 <Link to={item.href} className={`nav-link ${isActive ? 'nav-link-active' : 'nav-link-inactive'}`}>
-                  <item.icon className="h-5 w-5" />
+                  {item.name === 'Earnings Leaderboard' ? 
+                    <TrendingUp className="h-5 w-5" /> : 
+                    <item.icon className="h-5 w-5" />
+                  }
                   <span>{item.name}</span>
                 </Link>
               </li>;
