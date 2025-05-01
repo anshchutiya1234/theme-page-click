@@ -8,6 +8,7 @@ import {
   UserGroupIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline';
+import { TrendingUp } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const MobileNav = () => {
@@ -18,6 +19,7 @@ const MobileNav = () => {
     { name: 'Dashboard', href: '/dashboard', icon: ChartBarIcon },
     { name: 'Sub-Partners', href: '/sub-partners', icon: UserGroupIcon },
     { name: 'Withdrawals', href: '/withdrawals', icon: CurrencyDollarIcon },
+    { name: 'Earnings', href: '/partner-earnings', icon: TrendingUp },
     { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
   ];
   
@@ -39,7 +41,10 @@ const MobileNav = () => {
                 isActive ? 'text-partner-purple' : 'text-gray-500'
               }`}
             >
-              <item.icon className="h-5 w-5" />
+              {item.name === 'Earnings' ? 
+                <TrendingUp className="h-5 w-5" /> : 
+                <item.icon className="h-5 w-5" />
+              }
               <span className="text-xs">{item.name}</span>
             </Link>
           );

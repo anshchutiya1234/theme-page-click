@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -107,8 +106,8 @@ const PartnerEarnings = () => {
   };
 
   return (
-    <div className="container max-w-md mx-auto py-10">
-      <Card>
+    <div className="mx-auto w-full max-w-md px-4">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Earnings Leaderboard</CardTitle>
           <CardDescription>

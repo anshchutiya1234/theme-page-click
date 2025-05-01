@@ -9,7 +9,7 @@ const DashboardLayout = () => {
     <div className="min-h-screen bg-gray-50">
       <DashboardSidebar />
       <div className="lg:pl-64">
-        <main className="container py-10 pb-20 lg:pb-10">
+        <main className="container px-4 py-6 pb-20 lg:py-10 lg:pb-10">
           <Outlet />
         </main>
       </div>
