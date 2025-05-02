@@ -61,7 +61,7 @@ const SubPartners = () => {
             const totalClicks = directClicksData?.length || 0;
             
             // Calculate 20% of direct clicks as bonus
-            const bonusClicksEarned = Math.floor(totalClicks * 0.2);
+            const bonusClicksEarned = Math.ceil(totalClicks * 0.2);
             
             // Determine if the sub-partner is active (had activity in the last 30 days)
             const thirtyDaysAgo = new Date();
@@ -83,6 +83,47 @@ const SubPartners = () => {
             };
           })
         );
+        
+        // Now let's verify the actual bonus clicks in the database
+        for (const partner of fetchedSubPartners) {
+          // Check for actual bonus clicks in the database for the parent partner
+          const { data: bonusClicksData, error: bonusClicksError } = await supabase
+            .from('clicks')
+            .select('id')
+            .eq('user_id', profile.id)
+            .eq('source_user_id', partner.id)
+            .eq('type', 'bonus');
+            
+          if (!bonusClicksError && bonusClicksData) {
+            // If there's a discrepancy, add the missing bonus clicks
+            const actualBonusClicks = bonusClicksData.length;
+            const expectedBonusClicks = partner.bonusClicksEarned;
+            
+            if (actualBonusClicks < expectedBonusClicks) {
+              console.log(`Adding ${expectedBonusClicks - actualBonusClicks} missing bonus clicks for partner ${partner.partnerCode}`);
+              
+              // Add missing bonus clicks
+              const missingBonusClicks = expectedBonusClicks - actualBonusClicks;
+              if (missingBonusClicks > 0) {
+                const bonusClicks = Array(missingBonusClicks).fill(null).map(() => ({
+                  user_id: profile.id,
+                  source_user_id: partner.id,
+                  type: 'bonus',
+                  ip_address: '127.0.0.1',
+                  user_agent: 'SYSTEM_BONUS_CORRECTION'
+                }));
+                
+                const { error: insertError } = await supabase
+                  .from('clicks')
+                  .insert(bonusClicks);
+                  
+                if (insertError) {
+                  console.error('Error adding missing bonus clicks:', insertError);
+                }
+              }
+            }
+          }
+        }
         
         setSubPartners(fetchedSubPartners);
         setFilteredPartners(fetchedSubPartners);

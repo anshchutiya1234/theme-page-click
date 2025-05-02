@@ -56,7 +56,7 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
             const directClicksCount = directClicksData ? directClicksData.length : 0;
             
             // Calculate the 20% of direct clicks that should be credited to the referring partner
-            const bonusClicksEarned = Math.floor(directClicksCount * 0.2);
+            const bonusClicksEarned = Math.ceil(directClicksCount * 0.2);
             
             return {
               id: user.id,
@@ -100,7 +100,6 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
             <tr className="border-b">
               {!isMobile ? (
                 <>
-                  <th className="py-3 text-left font-medium text-gray-500">Username</th>
                   <th className="py-3 text-left font-medium text-gray-500">Partner Code</th>
                   <th className="py-3 text-right font-medium text-gray-500">Total Clicks</th>
                   <th className="py-3 text-right font-medium text-gray-500">Bonus Clicks (20%)</th>
@@ -119,8 +118,7 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
                 <tr key={partner.id} className="border-b hover:bg-gray-50">
                   {!isMobile ? (
                     <>
-                      <td className="py-4 font-medium">@{partner.username}</td>
-                      <td className="py-4">{partner.partnerCode}</td>
+                      <td className="py-4 font-medium">{partner.partnerCode}</td>
                       <td className="py-4 text-right">{partner.totalClicks.toLocaleString()}</td>
                       <td className="py-4 text-right">{partner.bonusClicksEarned.toLocaleString()}</td>
                     </>
@@ -134,7 +132,7 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
               ))
             ) : (
               <tr>
-                <td colSpan={isMobile ? 2 : 4} className="py-4 text-center text-gray-500">
+                <td colSpan={isMobile ? 2 : 3} className="py-4 text-center text-gray-500">
                   No sub-partners yet
                 </td>
               </tr>
