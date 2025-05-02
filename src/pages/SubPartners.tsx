@@ -159,7 +159,7 @@ const SubPartners = () => {
                   <CardContent className="p-4">
                     <div className="flex justify-between items-center mb-2">
                       <div className="font-medium text-lg">{partner.partnerCode}</div>
-                      <Badge variant={partner.status === 'active' ? "success" : "secondary"}>
+                      <Badge variant={partner.status === 'active' ? "default" : "secondary"}>
                         {partner.status === 'active' ? 'Active' : 'Inactive'}
                       </Badge>
                     </div>
@@ -201,7 +201,7 @@ const SubPartners = () => {
                     <TableCell className="text-right">{partner.totalClicks.toLocaleString()}</TableCell>
                     <TableCell className="text-right">{partner.bonusClicksEarned.toLocaleString()}</TableCell>
                     <TableCell className="text-right">
-                      <Badge variant={partner.status === 'active' ? "success" : "secondary"}>
+                      <Badge variant={partner.status === 'active' ? "default" : "secondary"}>
                         {partner.status === 'active' ? 'Active' : 'Inactive'}
                       </Badge>
                     </TableCell>
