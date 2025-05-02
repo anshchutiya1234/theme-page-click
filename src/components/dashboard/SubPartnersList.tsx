@@ -1,9 +1,12 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SubPartner {
   id: string;
   username: string;
+  partnerCode: string;
   totalClicks: number;
   bonusClicksEarned: number;
 }
@@ -16,6 +19,7 @@ interface SubPartnersListProps {
 const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
   const [subPartners, setSubPartners] = useState<SubPartner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchSubPartners = async () => {
@@ -23,7 +27,7 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
         // First get list of users that have referred_by matching this partner code
         const { data: usersData, error: usersError } = await supabase
           .from('users')
-          .select('id, username')
+          .select('id, username, partner_code')
           .eq('referred_by', partnerCode)
           .order('joined_at', { ascending: false })
           .limit(limit);
@@ -39,7 +43,7 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
         // For each sub-partner, get their clicks count and bonus clicks they generated
         const subPartnersWithStats = await Promise.all(
           usersData.map(async (user) => {
-            // Get total clicks by this sub-partner
+            // Get direct clicks by this sub-partner
             const { count: directClicksCount, error: directClicksError } = await supabase
               .from('clicks')
               .select('*', { count: 'exact', head: false })
@@ -52,19 +56,20 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
             const { count: bonusClicksCount, error: bonusClicksError } = await supabase
               .from('clicks')
               .select('*', { count: 'exact', head: false })
-              .eq('user_id', user.id)
+              .eq('user_id', partnerCode)
+              .eq('source_user_id', user.id)
               .eq('type', 'bonus');
               
             if (bonusClicksError) throw bonusClicksError;
             
             const totalClicks = directClicksCount || 0;
-            const bonusClicksEarned = Math.round(totalClicks * 0.2); // 20% of sub-partner's clicks
             
             return {
               id: user.id,
               username: user.username,
+              partnerCode: user.partner_code,
               totalClicks,
-              bonusClicksEarned
+              bonusClicksEarned: bonusClicksCount || 0
             };
           })
         );
@@ -83,8 +88,8 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
 
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <div className="flex justify-center items-center h-32">
+      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+        <div className="flex justify-center items-center h-24">
           <div className="animate-spin h-8 w-8 border-4 border-partner-purple border-t-transparent rounded-full"></div>
         </div>
       </div>
@@ -92,30 +97,50 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
       <h2 className="text-lg font-semibold mb-4">Your Sub-Partners</h2>
       
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b">
-              <th className="py-3 text-left font-medium text-gray-500">Username</th>
-              <th className="py-3 text-right font-medium text-gray-500">Total Clicks</th>
-              <th className="py-3 text-right font-medium text-gray-500">Bonus Clicks Earned</th>
+              {!isMobile ? (
+                <>
+                  <th className="py-3 text-left font-medium text-gray-500">Username</th>
+                  <th className="py-3 text-left font-medium text-gray-500">Partner Code</th>
+                  <th className="py-3 text-right font-medium text-gray-500">Total Clicks</th>
+                  <th className="py-3 text-right font-medium text-gray-500">Bonus Clicks</th>
+                </>
+              ) : (
+                <>
+                  <th className="py-3 text-left font-medium text-gray-500">Partner Code</th>
+                  <th className="py-3 text-right font-medium text-gray-500">Bonus</th>
+                </>
+              )}
             </tr>
           </thead>
           <tbody>
             {subPartners.length > 0 ? (
               subPartners.map((partner) => (
                 <tr key={partner.id} className="border-b hover:bg-gray-50">
-                  <td className="py-4 font-medium">@{partner.username}</td>
-                  <td className="py-4 text-right">{partner.totalClicks.toLocaleString()}</td>
-                  <td className="py-4 text-right">{partner.bonusClicksEarned.toLocaleString()}</td>
+                  {!isMobile ? (
+                    <>
+                      <td className="py-4 font-medium">@{partner.username}</td>
+                      <td className="py-4">{partner.partnerCode}</td>
+                      <td className="py-4 text-right">{partner.totalClicks.toLocaleString()}</td>
+                      <td className="py-4 text-right">{partner.bonusClicksEarned.toLocaleString()}</td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="py-4 font-medium">{partner.partnerCode}</td>
+                      <td className="py-4 text-right">{partner.bonusClicksEarned.toLocaleString()}</td>
+                    </>
+                  )}
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={3} className="py-4 text-center text-gray-500">
+                <td colSpan={isMobile ? 2 : 4} className="py-4 text-center text-gray-500">
                   No sub-partners yet
                 </td>
               </tr>

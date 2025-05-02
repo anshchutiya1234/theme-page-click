@@ -223,6 +223,14 @@ export type Database = {
         Args: { referrer_code: string }
         Returns: boolean
       }
+      update_referral_and_add_bonus: {
+        Args: {
+          user_id_param: string
+          referrer_code_param: string
+          referrer_id_param: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
