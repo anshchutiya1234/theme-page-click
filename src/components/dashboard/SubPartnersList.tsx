@@ -44,7 +44,7 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
         const subPartnersWithStats = await Promise.all(
           usersData.map(async (user) => {
             // Get direct clicks by this sub-partner
-            const { count: directClicksCount, error: directClicksError } = await supabase
+            const { data: directClicksData, error: directClicksError } = await supabase
               .from('clicks')
               .select('*', { count: 'exact', head: false })
               .eq('user_id', user.id)
@@ -52,24 +52,18 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
               
             if (directClicksError) throw directClicksError;
             
-            // Get bonus clicks this partner received from this sub-partner
-            const { count: bonusClicksCount, error: bonusClicksError } = await supabase
-              .from('clicks')
-              .select('*', { count: 'exact', head: false })
-              .eq('user_id', partnerCode)
-              .eq('source_user_id', user.id)
-              .eq('type', 'bonus');
-              
-            if (bonusClicksError) throw bonusClicksError;
+            // Get actual count of direct clicks
+            const directClicksCount = directClicksData ? directClicksData.length : 0;
             
-            const totalClicks = directClicksCount || 0;
+            // Calculate the 20% of direct clicks that should be credited to the referring partner
+            const bonusClicksEarned = Math.floor(directClicksCount * 0.2);
             
             return {
               id: user.id,
               username: user.username,
               partnerCode: user.partner_code,
-              totalClicks,
-              bonusClicksEarned: bonusClicksCount || 0
+              totalClicks: directClicksCount,
+              bonusClicksEarned: bonusClicksEarned
             };
           })
         );
@@ -109,12 +103,12 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
                   <th className="py-3 text-left font-medium text-gray-500">Username</th>
                   <th className="py-3 text-left font-medium text-gray-500">Partner Code</th>
                   <th className="py-3 text-right font-medium text-gray-500">Total Clicks</th>
-                  <th className="py-3 text-right font-medium text-gray-500">Bonus Clicks</th>
+                  <th className="py-3 text-right font-medium text-gray-500">Bonus Clicks (20%)</th>
                 </>
               ) : (
                 <>
                   <th className="py-3 text-left font-medium text-gray-500">Partner Code</th>
-                  <th className="py-3 text-right font-medium text-gray-500">Bonus</th>
+                  <th className="py-3 text-right font-medium text-gray-500">Bonus (20%)</th>
                 </>
               )}
             </tr>

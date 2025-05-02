@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface SubPartner {
   id: string;
@@ -56,18 +58,10 @@ const SubPartners = () => {
               
             if (directClicksError) throw directClicksError;
             
-            // Get bonus clicks this partner received from this sub-partner
-            const { data: bonusClicksData, error: bonusClicksError } = await supabase
-              .from('clicks')
-              .select('created_at')
-              .eq('user_id', profile.id)
-              .eq('source_user_id', user.id)
-              .eq('type', 'bonus');
-              
-            if (bonusClicksError) throw bonusClicksError;
-            
             const totalClicks = directClicksData?.length || 0;
-            const bonusClicksEarned = bonusClicksData?.length || 0;
+            
+            // Calculate 20% of direct clicks as bonus
+            const bonusClicksEarned = Math.floor(totalClicks * 0.2);
             
             // Determine if the sub-partner is active (had activity in the last 30 days)
             const thirtyDaysAgo = new Date();
@@ -144,13 +138,13 @@ const SubPartners = () => {
           <div>
             <h2 className="text-xl font-semibold">Your Sub-Partners</h2>
             <p className="text-sm text-gray-500 mt-1">
-              You've earned {totalBonusClicksEarned.toLocaleString()} bonus clicks
+              You've earned {totalBonusClicksEarned.toLocaleString()} bonus clicks (20% of sub-partners' clicks)
             </p>
           </div>
           
           <div className="w-full md:w-64">
             <Input
-              placeholder="Search by username or code..."
+              placeholder="Search by partner code..."
               value={searchTerm}
               onChange={handleSearch}
             />
@@ -161,23 +155,27 @@ const SubPartners = () => {
           <div className="space-y-4">
             {filteredPartners.length > 0 ? (
               filteredPartners.map((partner) => (
-                <div key={partner.id} className="border rounded-md p-3 bg-gray-50">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="font-medium">{partner.partnerCode}</div>
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                      partner.status === 'active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {partner.status === 'active' ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  <div className="text-sm text-gray-500">@{partner.username}</div>
-                  <div className="flex justify-between mt-2 text-sm">
-                    <div>Bonus clicks: <span className="font-medium">{partner.bonusClicksEarned}</span></div>
-                    <div>Total clicks: <span className="font-medium">{partner.totalClicks}</span></div>
-                  </div>
-                </div>
+                <Card key={partner.id} className="overflow-hidden">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="font-medium text-lg">{partner.partnerCode}</div>
+                      <Badge variant={partner.status === 'active' ? "success" : "secondary"}>
+                        {partner.status === 'active' ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 mt-3">
+                      <div>
+                        <p className="text-xs text-gray-500">Total Clicks</p>
+                        <p className="font-medium">{partner.totalClicks.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Your Bonus (20%)</p>
+                        <p className="font-medium">{partner.bonusClicksEarned.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))
             ) : (
               <div className="text-center py-6 text-gray-500">No sub-partners found</div>
@@ -187,11 +185,10 @@ const SubPartners = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Username</TableHead>
                 <TableHead>Partner Code</TableHead>
                 <TableHead>Join Date</TableHead>
                 <TableHead className="text-right">Total Clicks</TableHead>
-                <TableHead className="text-right">Bonus Clicks</TableHead>
+                <TableHead className="text-right">Your Bonus (20%)</TableHead>
                 <TableHead className="text-right">Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -199,25 +196,20 @@ const SubPartners = () => {
               {filteredPartners.length > 0 ? (
                 filteredPartners.map((partner) => (
                   <TableRow key={partner.id}>
-                    <TableCell className="font-medium">@{partner.username}</TableCell>
-                    <TableCell>{partner.partnerCode}</TableCell>
+                    <TableCell className="font-medium">{partner.partnerCode}</TableCell>
                     <TableCell>{new Date(partner.joinDate).toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">{partner.totalClicks.toLocaleString()}</TableCell>
                     <TableCell className="text-right">{partner.bonusClicksEarned.toLocaleString()}</TableCell>
                     <TableCell className="text-right">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        partner.status === 'active' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
+                      <Badge variant={partner.status === 'active' ? "success" : "secondary"}>
                         {partner.status === 'active' ? 'Active' : 'Inactive'}
-                      </span>
+                      </Badge>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-4 text-gray-500">
+                  <TableCell colSpan={5} className="text-center py-4 text-gray-500">
                     No sub-partners found
                   </TableCell>
                 </TableRow>

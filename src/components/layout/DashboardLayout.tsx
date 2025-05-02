@@ -12,7 +12,7 @@ const DashboardLayout = () => {
     <div className="min-h-screen bg-gray-50">
       <DashboardSidebar />
       <div className="lg:pl-64">
-        <main className={`px-3 py-4 ${isMobile ? 'pb-24' : 'py-6 pb-20 px-4'} lg:py-10 lg:pb-10 lg:px-8 max-w-7xl mx-auto`}>
+        <main className={`${isMobile ? 'px-3 py-3 pb-24' : 'py-6 pb-20 px-6'} lg:py-8 lg:pb-8 lg:px-8 max-w-7xl mx-auto`}>
           <Outlet />
         </main>
       </div>
