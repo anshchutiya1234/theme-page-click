@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -34,7 +35,7 @@ const PartnerCodeCard = ({
         const { data: existingUrl, error: existingError } = await supabase
           .from('short_urls')
           .select('short_code')
-          .eq('target_url', 'https://tradingcircle.space/join?ref=' + partnerCode)
+          .eq('target_url', 'https://tradingcircle.space/join?ref=' + partnerCode as any)
           .maybeSingle();
           
         if (existingUrl) {

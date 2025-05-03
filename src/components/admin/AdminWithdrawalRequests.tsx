@@ -24,9 +24,9 @@ interface WithdrawalRequest {
   username: string;
   email: string;
   amount: number;
-  payment_method: string; // Changed from enum type to string to match Supabase response
+  payment_method: string;
   payment_details: string;
-  status: string; // Changed from enum to string to match Supabase response
+  status: string;
   created_at: string;
   admin_message?: string;
 }
@@ -64,18 +64,21 @@ const AdminWithdrawalRequests = () => {
         }
         
         // Format data
-        const formattedData: WithdrawalRequest[] = data.map(item => ({
-          id: item.id,
-          user_id: item.user_id,
-          username: item.users?.username || 'Unknown',
-          email: item.users?.email || 'Unknown',
-          amount: item.amount,
-          payment_method: item.payment_method,
-          payment_details: item.payment_details,
-          status: item.status,
-          created_at: item.created_at,
-          admin_message: item.admin_message
-        }));
+        const formattedData: WithdrawalRequest[] = data.map(item => {
+          if (!item) return null;
+          return {
+            id: item.id,
+            user_id: item.user_id,
+            username: item.users?.username || 'Unknown',
+            email: item.users?.email || 'Unknown',
+            amount: item.amount,
+            payment_method: item.payment_method,
+            payment_details: item.payment_details,
+            status: item.status,
+            created_at: item.created_at,
+            admin_message: item.admin_message
+          };
+        }).filter(Boolean) as WithdrawalRequest[];
         
         setWithdrawals(formattedData);
       } catch (error) {
@@ -104,7 +107,7 @@ const AdminWithdrawalRequests = () => {
           status,
           admin_message: statusMessage
         } as any)
-        .eq('id', selectedWithdrawal.id);
+        .eq('id', selectedWithdrawal.id as any);
         
       if (error) throw error;
       

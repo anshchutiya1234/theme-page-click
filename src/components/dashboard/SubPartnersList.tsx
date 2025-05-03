@@ -28,7 +28,7 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select('id, username, partner_code')
-          .eq('referred_by', partnerCode)
+          .eq('referred_by', partnerCode as any)
           .order('joined_at', { ascending: false })
           .limit(limit);
 
@@ -47,8 +47,8 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
             const { data: directClicksData, error: directClicksError } = await supabase
               .from('clicks')
               .select('*', { count: 'exact', head: false })
-              .eq('user_id', user.id)
-              .eq('type', 'direct');
+              .eq('user_id', user.id as any)
+              .eq('type', 'direct' as any);
               
             if (directClicksError) throw directClicksError;
             

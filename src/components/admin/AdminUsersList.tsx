@@ -18,7 +18,7 @@ interface UserData {
   bonus_clicks: number;
   total_earnings: number;
   sub_partners_count: number;
-  is_admin: boolean; // Added missing is_admin property
+  is_admin: boolean;
 }
 
 const AdminUsersList = () => {
@@ -70,7 +70,7 @@ const AdminUsersList = () => {
               bonus_clicks: stats.bonus_clicks,
               total_earnings: stats.total_earnings,
               sub_partners_count: stats.sub_partners_count
-            };
+            } as UserData;
           })
         );
         
@@ -115,8 +115,8 @@ const AdminUsersList = () => {
     try {
       const { error } = await supabase
         .from('users')
-        .update({ is_admin: true })
-        .eq('id', userId);
+        .update({ is_admin: true } as any)
+        .eq('id', userId as any);
         
       if (error) throw error;
       
