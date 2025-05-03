@@ -57,7 +57,7 @@ const AdminUsersList = () => {
               
             if (statsError) throw statsError;
             
-            const stats = statsData && statsData[0] ? statsData[0] : {
+            const stats = statsData && statsData.length > 0 ? statsData[0] : {
               direct_clicks: 0,
               bonus_clicks: 0,
               total_earnings: 0,
@@ -115,8 +115,8 @@ const AdminUsersList = () => {
     try {
       const { error } = await supabase
         .from('users')
-        .update({ is_admin: true } as any)
-        .eq('id', userId as any);
+        .update({ is_admin: true })
+        .eq('id', userId);
         
       if (error) throw error;
       

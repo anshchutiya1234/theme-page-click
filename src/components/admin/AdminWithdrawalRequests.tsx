@@ -64,21 +64,22 @@ const AdminWithdrawalRequests = () => {
         }
         
         // Format data
-        const formattedData: WithdrawalRequest[] = data.map(item => {
-          if (!item) return null;
-          return {
-            id: item.id,
-            user_id: item.user_id,
-            username: item.users?.username || 'Unknown',
-            email: item.users?.email || 'Unknown',
-            amount: item.amount,
-            payment_method: item.payment_method,
-            payment_details: item.payment_details,
-            status: item.status,
-            created_at: item.created_at,
-            admin_message: item.admin_message
-          };
-        }).filter(Boolean) as WithdrawalRequest[];
+        const formattedData: WithdrawalRequest[] = data
+          .filter((item): item is NonNullable<typeof item> => item !== null)
+          .map(item => {
+            return {
+              id: item.id,
+              user_id: item.user_id,
+              username: item.users?.username || 'Unknown',
+              email: item.users?.email || 'Unknown',
+              amount: item.amount,
+              payment_method: item.payment_method,
+              payment_details: item.payment_details,
+              status: item.status,
+              created_at: item.created_at,
+              admin_message: item.admin_message
+            };
+          });
         
         setWithdrawals(formattedData);
       } catch (error) {
@@ -106,8 +107,8 @@ const AdminWithdrawalRequests = () => {
         .update({
           status,
           admin_message: statusMessage
-        } as any)
-        .eq('id', selectedWithdrawal.id as any);
+        })
+        .eq('id', selectedWithdrawal.id);
         
       if (error) throw error;
       
