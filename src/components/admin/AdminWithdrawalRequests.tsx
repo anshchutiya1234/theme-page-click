@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -102,7 +103,7 @@ const AdminWithdrawalRequests = () => {
         .update({
           status,
           admin_message: statusMessage
-        })
+        } as any)
         .eq('id', selectedWithdrawal.id);
         
       if (error) throw error;

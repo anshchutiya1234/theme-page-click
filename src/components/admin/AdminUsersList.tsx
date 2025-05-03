@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -56,7 +57,7 @@ const AdminUsersList = () => {
               
             if (statsError) throw statsError;
             
-            const stats = statsData[0] || {
+            const stats = statsData && statsData[0] ? statsData[0] : {
               direct_clicks: 0,
               bonus_clicks: 0,
               total_earnings: 0,
