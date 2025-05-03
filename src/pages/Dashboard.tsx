@@ -75,7 +75,7 @@ const Dashboard = () => {
       <div>
         <h1 className="text-3xl font-bold">Partner Dashboard</h1>
         <p className="text-gray-500 mt-1">
-          Welcome back, @{profile.username}
+          Welcome back, {profile.name}
         </p>
       </div>
       
