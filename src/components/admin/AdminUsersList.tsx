@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -18,7 +17,7 @@ interface UserData {
   bonus_clicks: number;
   total_earnings: number;
   sub_partners_count: number;
-  is_admin: boolean;
+  is_admin: boolean; // Added missing is_admin property
 }
 
 const AdminUsersList = () => {
@@ -57,7 +56,7 @@ const AdminUsersList = () => {
               
             if (statsError) throw statsError;
             
-            const stats = statsData && statsData[0] ? statsData[0] : {
+            const stats = statsData[0] || {
               direct_clicks: 0,
               bonus_clicks: 0,
               total_earnings: 0,
@@ -70,7 +69,7 @@ const AdminUsersList = () => {
               bonus_clicks: stats.bonus_clicks,
               total_earnings: stats.total_earnings,
               sub_partners_count: stats.sub_partners_count
-            } as UserData;
+            };
           })
         );
         
@@ -115,8 +114,8 @@ const AdminUsersList = () => {
     try {
       const { error } = await supabase
         .from('users')
-        .update({ is_admin: true } as any)
-        .eq('id', userId as any);
+        .update({ is_admin: true })
+        .eq('id', userId);
         
       if (error) throw error;
       

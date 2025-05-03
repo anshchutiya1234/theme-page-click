@@ -17,7 +17,7 @@ export const useSubPartners = (profileId: string | undefined) => {
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select('id, username, joined_at, partner_code')
-          .eq('referred_by', profileId as any);
+          .eq('referred_by', profileId);
 
         if (usersError) throw usersError;
         
@@ -35,8 +35,8 @@ export const useSubPartners = (profileId: string | undefined) => {
             const { data: directClicksData, error: directClicksError } = await supabase
               .from('clicks')
               .select('created_at')
-              .eq('user_id', user.id as any)
-              .eq('type', 'direct' as any);
+              .eq('user_id', user.id)
+              .eq('type', 'direct');
               
             if (directClicksError) throw directClicksError;
             
@@ -72,9 +72,9 @@ export const useSubPartners = (profileId: string | undefined) => {
           const { data: bonusClicksData, error: bonusClicksError } = await supabase
             .from('clicks')
             .select('id')
-            .eq('user_id', profileId as any)
-            .eq('source_user_id', partner.id as any)
-            .eq('type', 'bonus' as any);
+            .eq('user_id', profileId)
+            .eq('source_user_id', partner.id)
+            .eq('type', 'bonus');
             
           if (!bonusClicksError && bonusClicksData) {
             // If there's a discrepancy, add the missing bonus clicks
@@ -97,7 +97,7 @@ export const useSubPartners = (profileId: string | undefined) => {
                 
                 const { error: insertError } = await supabase
                   .from('clicks')
-                  .insert(bonusClicks as any);
+                  .insert(bonusClicks);
                   
                 if (insertError) {
                   console.error('Error adding missing bonus clicks:', insertError);

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,9 +23,9 @@ interface WithdrawalRequest {
   username: string;
   email: string;
   amount: number;
-  payment_method: string;
+  payment_method: string; // Changed from enum type to string to match Supabase response
   payment_details: string;
-  status: string;
+  status: string; // Changed from enum to string to match Supabase response
   created_at: string;
   admin_message?: string;
 }
@@ -63,25 +62,19 @@ const AdminWithdrawalRequests = () => {
           return;
         }
         
-        // Format data and filter out any null items
-        const formattedData: WithdrawalRequest[] = data
-          .filter(item => item !== null && 'id' in item)
-          .map(item => {
-            const userInfo = item.users || { username: 'Unknown', email: 'Unknown' };
-            
-            return {
-              id: item.id,
-              user_id: item.user_id,
-              username: userInfo.username || 'Unknown',
-              email: userInfo.email || 'Unknown',
-              amount: item.amount,
-              payment_method: item.payment_method,
-              payment_details: item.payment_details,
-              status: item.status,
-              created_at: item.created_at,
-              admin_message: item.admin_message
-            };
-          });
+        // Format data
+        const formattedData: WithdrawalRequest[] = data.map(item => ({
+          id: item.id,
+          user_id: item.user_id,
+          username: item.users?.username || 'Unknown',
+          email: item.users?.email || 'Unknown',
+          amount: item.amount,
+          payment_method: item.payment_method,
+          payment_details: item.payment_details,
+          status: item.status,
+          created_at: item.created_at,
+          admin_message: item.admin_message
+        }));
         
         setWithdrawals(formattedData);
       } catch (error) {
@@ -109,8 +102,8 @@ const AdminWithdrawalRequests = () => {
         .update({
           status,
           admin_message: statusMessage
-        } as any)
-        .eq('id', selectedWithdrawal.id as any);
+        })
+        .eq('id', selectedWithdrawal.id);
         
       if (error) throw error;
       

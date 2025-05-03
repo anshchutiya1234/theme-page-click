@@ -1,162 +1,156 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Clipboard, ExternalLink } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-
+import { useAuth } from '@/contexts/AuthContext';
 interface PartnerCodeCardProps {
   partnerCode: string;
 }
-
-const PartnerCodeCard = ({ partnerCode }: PartnerCodeCardProps) => {
-  const [copied, setCopied] = useState(false);
-  const [shortUrl, setShortUrl] = useState<string | null>(null);
-  const [isCreatingUrl, setIsCreatingUrl] = useState(false);
-  const { toast } = useToast();
-  const linkId = `link-${partnerCode}`;
-  const edgeFunctionsUrl = import.meta.env.VITE_EDGE_FUNCTIONS_URL || 'https://ekfgfyjtfgjrfwbkoifd.supabase.co/functions/v1';
-
+const PartnerCodeCard = ({
+  partnerCode
+}: PartnerCodeCardProps) => {
+  const {
+    toast
+  } = useToast();
+  const {
+    profile
+  } = useAuth();
+  const [shortUrl, setShortUrl] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    const checkExistingShortUrl = async () => {
+    const createOrGetShortUrl = async () => {
+      if (!profile) {
+        console.log('No profile found');
+        setError('Please log in to generate a short URL');
+        setIsLoading(false);
+        return;
+      }
       try {
-        const { data, error } = await supabase
-          .from('short_urls')
-          .select('short_code')
-          .eq('target_url', `${window.location.origin}?ref=${partnerCode}` as any)
-          .maybeSingle();
-        
-        if (error) throw error;
-        
-        if (data && 'short_code' in data) {
-          setShortUrl(`${window.location.origin}/r/${data.short_code}`);
+        setIsLoading(true);
+        setError(null);
+        console.log('Checking for existing URL for partner code:', partnerCode);
+
+        // Check if we already have a short URL for this partner code
+        const {
+          data: existingUrl,
+          error: existingError
+        } = await supabase.from('short_urls').select('short_code').eq('target_url', 'https://tradingcircle.space/join?ref=' + partnerCode).single();
+        if (existingUrl) {
+          console.log('Found existing short URL:', existingUrl);
+          setShortUrl(`${window.location.origin}/r/${existingUrl.short_code}`);
+          setIsLoading(false);
+          return;
+        }
+
+        // If no existing URL and no error (or expected no results error), create new one
+        if (!existingError || existingError.code === 'PGRST116') {
+          console.log('Generating new short code...');
+          // Generate a new short code locally
+          const generateShortCode = () => {
+            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 6; i++) {
+              result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+          };
+          const shortCode = generateShortCode();
+          console.log('Generated short code:', shortCode);
+
+          // Create a new short URL
+          const {
+            data: newUrl,
+            error: insertError
+          } = await supabase.from('short_urls').insert({
+            user_id: profile.id,
+            target_url: 'https://tradingcircle.space/join?ref=' + partnerCode,
+            short_code: shortCode
+          }).select('short_code').single();
+          if (insertError) {
+            // If we get a unique violation, try again with a new code
+            if (insertError.code === '23505') {
+              console.log('Short code already exists, retrying...');
+              throw new Error('Short code already exists, please try again');
+            }
+            console.error('Error inserting short URL:', insertError);
+            throw new Error(`Failed to save short URL: ${insertError.message}`);
+          }
+          if (!newUrl) {
+            throw new Error('No short URL created');
+          }
+          console.log('Created new short URL:', newUrl);
+          setShortUrl(`${window.location.origin}/r/${newUrl.short_code}`);
+        } else {
+          // If there was an unexpected error checking for existing URL
+          console.error('Unexpected error checking existing URL:', existingError);
+          throw existingError;
         }
       } catch (error) {
-        console.error('Error checking for existing short URL:', error);
+        console.error('Error creating short URL:', error);
+        const errorMessage = error instanceof Error ? error.message : "Failed to generate short URL. Please try again.";
+        setError(errorMessage);
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
-    
-    if (partnerCode) {
-      checkExistingShortUrl();
-    }
-  }, [partnerCode]);
-  
-  const copyToClipboard = () => {
-    const urlToCopy = shortUrl || `${window.location.origin}?ref=${partnerCode}`;
-    navigator.clipboard.writeText(urlToCopy);
-    setCopied(true);
-    
-    toast({
-      title: "Copied!",
-      description: "Partner link copied to clipboard",
-    });
-    
-    setTimeout(() => {
-      setCopied(false);
-    }, 2000);
-  };
-  
-  const createShortUrl = async () => {
-    if (shortUrl) return;
-    
-    setIsCreatingUrl(true);
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData?.user) throw new Error('User not authenticated');
-      
-      const { data: genCode, error } = await supabase
-        .rpc('generate_unique_short_code');
-        
-      if (error || !genCode) throw error || new Error('Failed to generate code');
-      
-      const shortCode = genCode;
-      
-      // The type issue is with Supabase's TypeScript definitions
-      // Using type assertion to make it work
-      const { error: insertError } = await supabase
-        .from('short_urls')
-        .insert({
-          user_id: userData.user.id,
-          target_url: `${window.location.origin}?ref=${partnerCode}`,
-          short_code: shortCode
-        } as any);
-        
-      if (insertError) throw insertError;
-      
-      setShortUrl(`${window.location.origin}/r/${shortCode}`);
-      
+    createOrGetShortUrl();
+  }, [partnerCode, toast, profile]);
+  const copyToClipboard = (text: string, successMessage: string) => {
+    navigator.clipboard.writeText(text).then(() => {
       toast({
-        title: "Success!",
-        description: "Short URL created successfully",
+        title: "Copied!",
+        description: successMessage
       });
-    } catch (error: any) {
-      console.error('Error creating short URL:', error);
+    }, err => {
       toast({
         title: "Error",
-        description: "Failed to create short URL. Please try again.",
-        variant: "destructive",
+        description: "Could not copy text: " + err,
+        variant: "destructive"
       });
-    } finally {
-      setIsCreatingUrl(false);
-    }
+    });
   };
-  
-  return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="space-y-4">
-          <div>
-            <h3 className="font-medium text-lg mb-1">Your Partner Link</h3>
-            <p className="text-sm text-gray-500 mb-3">
-              Share this link to earn clicks. You earn $0.10 per click.
-            </p>
-          </div>
-          
-          <div className="rounded-md border flex items-center">
-            <div className="flex-1 px-4 py-2 truncate">
-              <a 
-                href={shortUrl || `${window.location.origin}?ref=${partnerCode}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                id={linkId}
-                className="font-medium text-partner-purple hover:underline truncate block"
-              >
-                {shortUrl || `${window.location.origin}?ref=${partnerCode}`}
-              </a>
-            </div>
-            <div className="pr-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={copyToClipboard}
-                className="h-8 w-8"
-                title="Copy to clipboard"
-              >
-                <Clipboard className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              <span className="font-medium">Partner Code:</span> {partnerCode}
-            </div>
-            {!shortUrl && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={createShortUrl}
-                disabled={isCreatingUrl}
-              >
-                {isCreatingUrl ? "Creating..." : "Create Short URL"}
-              </Button>
-            )}
+  const shareToTwitter = () => {
+    const shareText = `Join the Trading Circle Partner Program and earn $1,000 per 10,000 clicks. Use my link below:`;
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shortUrl)}`;
+    window.open(shareUrl, '_blank');
+  };
+  return <div className="bg-white p-6 rounded-lg shadow-md">
+      <h2 className="text-lg font-semibold mb-4">Your Partner Code</h2>
+      
+      <div className="space-y-4">
+        <div>
+          <p className="text-sm font-medium text-gray-500 mb-2">Partner Code</p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 bg-gray-100 px-3 py-2 rounded-md font-mono">
+              {partnerCode}
+            </code>
+            <Button variant="outline" size="sm" onClick={() => copyToClipboard(partnerCode, "Partner code copied to clipboard!")}>
+              Copy
+            </Button>
           </div>
         </div>
-      </CardContent>
-    </Card>
-  );
+        
+        <div>
+          <p className="text-sm font-medium text-gray-500 mb-2">Short URL</p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 bg-gray-100 px-3 py-2 rounded-md font-mono truncate">
+              {isLoading ? 'Generating...' : error ? 'Error generating URL' : shortUrl}
+            </code>
+            <Button variant="outline" size="sm" disabled={isLoading || !shortUrl} onClick={() => copyToClipboard(shortUrl, "Short URL copied to clipboard!")}>
+              Copy
+            </Button>
+          </div>
+          {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
+        </div>
+        
+        
+      </div>
+    </div>;
 };
-
 export default PartnerCodeCard;

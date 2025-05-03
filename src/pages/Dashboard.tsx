@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LinkIcon, ChartBarIcon, UsersIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
@@ -61,7 +60,7 @@ const Dashboard = () => {
       <div>
         <h1 className="text-3xl font-bold">Partner Dashboard</h1>
         <p className="text-gray-500 mt-1">
-          Welcome back, {profile.name}
+          Welcome back, @{profile.username}
         </p>
       </div>
       
