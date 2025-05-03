@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LinkIcon, ChartBarIcon, UsersIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
@@ -31,7 +32,18 @@ const Dashboard = () => {
           .rpc('get_user_stats', { user_id: profile.id });
 
         if (error) throw error;
-        setStats(data[0]);
+        
+        if (data && data[0]) {
+          setStats(data[0]);
+        } else {
+          // Set default values if no data returned
+          setStats({
+            direct_clicks: 0,
+            bonus_clicks: 0,
+            total_earnings: 0,
+            sub_partners_count: 0
+          });
+        }
       } catch (error: any) {
         console.error('Error fetching stats:', error);
         toast({
@@ -54,6 +66,9 @@ const Dashboard = () => {
       </div>
     );
   }
+
+  // Calculate total clicks (direct + bonus)
+  const totalClicks = (stats?.direct_clicks || 0) + (stats?.bonus_clicks || 0);
 
   return (
     <div className="space-y-8">

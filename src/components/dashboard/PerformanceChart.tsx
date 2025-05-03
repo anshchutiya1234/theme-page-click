@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   LineChart,
@@ -19,6 +20,11 @@ interface ChartData {
 
 interface PerformanceChartProps {
   userId: string;
+}
+
+interface ClicksData {
+  created_at: string;
+  type: 'direct' | 'bonus';
 }
 
 const PerformanceChart = ({ userId }: PerformanceChartProps) => {
@@ -59,10 +65,10 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
             startDate.setMonth(startDate.getMonth() - 6);
         }
 
-        // Fetch clicks from Supabase
+        // Fetch clicks from Supabase - make sure to include both direct and bonus clicks
         const { data: clicksData, error } = await supabase
           .from('clicks')
-          .select('type, created_at')
+          .select('created_at, type')
           .eq('user_id', userId)
           .gte('created_at', startDate.toISOString());
 
@@ -83,7 +89,7 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
     fetchChartData();
   }, [userId, selectedRange]);
 
-  const processClicksData = (clicks: any[], range: string): ChartData[] => {
+  const processClicksData = (clicks: ClicksData[], range: string): ChartData[] => {
     if (!clicks.length) return generateFallbackData();
 
     const dateFormat = getDateFormat(range);
@@ -124,6 +130,8 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
 
     // Process clicks data
     clicks.forEach(click => {
+      if (!click || !click.created_at) return;
+      
       const date = new Date(click.created_at);
       let key;
       
@@ -138,7 +146,7 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
       if (dataMap[key]) {
         if (click.type === 'direct') {
           dataMap[key].directClicks++;
-        } else {
+        } else if (click.type === 'bonus') {
           dataMap[key].bonusClicks++;
         }
       }

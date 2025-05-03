@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -19,7 +20,11 @@ interface PartnerStats {
   username: string;
   name: string;
   earnings: number;
-  clickCount: number;
+  clickCount: {
+    direct: number;
+    bonus: number;
+    total: number;
+  };
 }
 
 const PartnerEarnings = () => {
@@ -61,14 +66,23 @@ const PartnerEarnings = () => {
         return;
       }
       
-      // Next, get the click count for this month
-      const { data: clickData, error: clickError } = await supabase
+      // Get direct clicks for this month
+      const { data: directClicksData, error: directClicksError } = await supabase
         .from('clicks')
         .select('*', { count: 'exact' })
         .eq('user_id', userData.id)
+        .eq('type', 'direct')
         .gte('created_at', firstDayOfMonth.toISOString());
       
-      if (clickError) {
+      // Get bonus clicks for this month
+      const { data: bonusClicksData, error: bonusClicksError } = await supabase
+        .from('clicks')
+        .select('*', { count: 'exact' })
+        .eq('user_id', userData.id)
+        .eq('type', 'bonus')
+        .gte('created_at', firstDayOfMonth.toISOString());
+      
+      if (directClicksError || bonusClicksError) {
         toast({
           variant: "destructive",
           title: "Error",
@@ -78,14 +92,21 @@ const PartnerEarnings = () => {
         return;
       }
       
-      // Calculate earnings ($0.10 per click)
-      const clickCount = clickData?.length || 0;
-      const earnings = clickCount * 0.10;
+      const directClicks = directClicksData?.length || 0;
+      const bonusClicks = bonusClicksData?.length || 0;
+      const totalClicks = directClicks + bonusClicks;
+      
+      // Calculate earnings ($0.10 per click - both direct and bonus)
+      const earnings = totalClicks * 0.10;
       
       setStats({
         username: userData.username,
         name: userData.name,
-        clickCount,
+        clickCount: {
+          direct: directClicks,
+          bonus: bonusClicks,
+          total: totalClicks
+        },
         earnings
       });
       
@@ -152,13 +173,18 @@ const PartnerEarnings = () => {
                 <p className="text-gray-500">{stats.name}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-muted rounded p-3 text-center">
-                  <p className="text-muted-foreground text-sm">Clicks</p>
-                  <p className="text-2xl font-bold">{stats.clickCount}</p>
+                <div className="bg-muted rounded p-3">
+                  <p className="text-muted-foreground text-sm mb-1">Clicks Breakdown</p>
+                  <div className="grid grid-cols-1 gap-1">
+                    <p className="text-sm">Direct: <span className="font-medium">{stats.clickCount.direct}</span></p>
+                    <p className="text-sm">Bonus: <span className="font-medium">{stats.clickCount.bonus}</span></p>
+                    <p className="text-sm font-bold mt-1">Total: {stats.clickCount.total}</p>
+                  </div>
                 </div>
                 <div className="bg-muted rounded p-3 text-center">
-                  <p className="text-muted-foreground text-sm">Earnings</p>
+                  <p className="text-muted-foreground text-sm mb-2">Earnings</p>
                   <p className="text-2xl font-bold">${stats.earnings.toFixed(2)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">$0.10 per click</p>
                 </div>
               </div>
             </div>
