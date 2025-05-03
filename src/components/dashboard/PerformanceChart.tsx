@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   LineChart,
@@ -22,9 +21,10 @@ interface PerformanceChartProps {
   userId: string;
 }
 
+// Update the interface to make the type field more flexible
 interface ClicksData {
   created_at: string;
-  type: 'direct' | 'bonus';
+  type: 'direct' | 'bonus' | string; // Allow string as well to be more flexible
 }
 
 const PerformanceChart = ({ userId }: PerformanceChartProps) => {
@@ -75,7 +75,9 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
         if (error) throw error;
         
         // Process the data for chart display
-        const processedData = processClicksData(clicksData || [], selectedRange);
+        // Use type assertion to satisfy TypeScript
+        const typedClicksData = clicksData as ClicksData[] || [];
+        const processedData = processClicksData(typedClicksData, selectedRange);
         setChartData(processedData);
       } catch (error) {
         console.error("Error fetching chart data:", error);
@@ -144,9 +146,12 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
       }
       
       if (dataMap[key]) {
-        if (click.type === 'direct') {
+        // Normalize type to either 'direct' or 'bonus' for processing
+        const clickType = click.type === 'direct' ? 'direct' : 'bonus';
+        
+        if (clickType === 'direct') {
           dataMap[key].directClicks++;
-        } else if (click.type === 'bonus') {
+        } else {
           dataMap[key].bonusClicks++;
         }
       }
