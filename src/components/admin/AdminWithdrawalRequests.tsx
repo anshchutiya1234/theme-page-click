@@ -63,15 +63,17 @@ const AdminWithdrawalRequests = () => {
           return;
         }
         
-        // Format data
+        // Format data and filter out any null items
         const formattedData: WithdrawalRequest[] = data
-          .filter((item): item is NonNullable<typeof item> => item !== null)
+          .filter(item => item !== null && 'id' in item)
           .map(item => {
+            const userInfo = item.users || { username: 'Unknown', email: 'Unknown' };
+            
             return {
               id: item.id,
               user_id: item.user_id,
-              username: item.users?.username || 'Unknown',
-              email: item.users?.email || 'Unknown',
+              username: userInfo.username || 'Unknown',
+              email: userInfo.email || 'Unknown',
               amount: item.amount,
               payment_method: item.payment_method,
               payment_details: item.payment_details,
@@ -107,8 +109,8 @@ const AdminWithdrawalRequests = () => {
         .update({
           status,
           admin_message: statusMessage
-        })
-        .eq('id', selectedWithdrawal.id);
+        } as any)
+        .eq('id', selectedWithdrawal.id as any);
         
       if (error) throw error;
       

@@ -24,12 +24,12 @@ const PartnerCodeCard = ({ partnerCode }: PartnerCodeCardProps) => {
         const { data, error } = await supabase
           .from('short_urls')
           .select('short_code')
-          .eq('target_url', `${window.location.origin}?ref=${partnerCode}`)
+          .eq('target_url', `${window.location.origin}?ref=${partnerCode}` as any)
           .maybeSingle();
         
         if (error) throw error;
         
-        if (data) {
+        if (data && 'short_code' in data) {
           setShortUrl(`${window.location.origin}/r/${data.short_code}`);
         }
       } catch (error) {
@@ -72,13 +72,15 @@ const PartnerCodeCard = ({ partnerCode }: PartnerCodeCardProps) => {
       
       const shortCode = genCode;
       
+      // The type issue is with Supabase's TypeScript definitions
+      // Using type assertion to make it work
       const { error: insertError } = await supabase
         .from('short_urls')
         .insert({
           user_id: userData.user.id,
           target_url: `${window.location.origin}?ref=${partnerCode}`,
           short_code: shortCode
-        });
+        } as any);
         
       if (insertError) throw insertError;
       
