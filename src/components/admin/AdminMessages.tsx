@@ -120,9 +120,9 @@ const AdminMessages = () => {
         
         // Sort users by latest message time
         const sortedUsers = usersWithMessages.sort((a, b) => {
-          if (!a.last_message_time) return 1;
-          if (!b.last_message_time) return -1;
-          return new Date(b.last_message_time).getTime() - new Date(a.last_message_time).getTime();
+          const aTime = a.last_message_time ? new Date(a.last_message_time).getTime() : 0;
+          const bTime = b.last_message_time ? new Date(b.last_message_time).getTime() : 0;
+          return bTime - aTime;
         });
         
         setUsers(sortedUsers);
