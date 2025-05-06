@@ -2,7 +2,9 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChartBarIcon, Cog6ToothIcon, CurrencyDollarIcon, UserGroupIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { MessageSquare } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import UnreadMessagesIndicator from '../messages/UnreadMessagesIndicator';
 
 const DashboardSidebar = () => {
   const location = useLocation();
@@ -23,6 +25,11 @@ const DashboardSidebar = () => {
     name: 'Withdrawals',
     href: '/withdrawals',
     icon: CurrencyDollarIcon
+  }, {
+    name: 'Messages',
+    href: '/messages',
+    icon: MessageSquare,
+    indicator: true
   }, {
     name: 'Settings',
     href: '/settings',
@@ -50,7 +57,18 @@ const DashboardSidebar = () => {
           const isActive = location.pathname === item.href;
           return <li key={item.name}>
                 <Link to={item.href} className={`nav-link ${isActive ? 'nav-link-active' : 'nav-link-inactive'}`}>
-                  <item.icon className="h-5 w-5" />
+                  {item.name === 'Messages' ? (
+                    <div className="relative">
+                      <MessageSquare className="h-5 w-5" />
+                      {item.indicator && (
+                        <div className="absolute -top-2 -right-2">
+                          <UnreadMessagesIndicator className="h-4 w-4 text-[10px]" />
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <item.icon className="h-5 w-5" />
+                  )}
                   <span>{item.name}</span>
                 </Link>
               </li>;

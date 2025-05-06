@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,11 +8,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import AdminWithdrawalRequests from '@/components/admin/AdminWithdrawalRequests';
 import AdminUsersList from '@/components/admin/AdminUsersList';
+import AdminMessages from '@/components/admin/AdminMessages';
 
 const Admin = () => {
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'users' | 'withdrawals'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'withdrawals' | 'messages'>('users');
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -88,13 +90,25 @@ const Admin = () => {
           >
             Withdrawal Requests
           </button>
+          <button
+            className={`px-4 py-2 font-medium ${
+              activeTab === 'messages' 
+                ? 'text-partner-purple border-b-2 border-partner-purple' 
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+            onClick={() => setActiveTab('messages')}
+          >
+            Messages
+          </button>
         </div>
         
         <div className="mt-6">
           {activeTab === 'users' ? (
             <AdminUsersList />
-          ) : (
+          ) : activeTab === 'withdrawals' ? (
             <AdminWithdrawalRequests />
+          ) : (
+            <AdminMessages />
           )}
         </div>
       </div>

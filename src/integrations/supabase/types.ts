@@ -54,6 +54,39 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_admin: boolean | null
+          is_broadcast: boolean | null
+          is_read: boolean | null
+          receiver_id: string | null
+          sender_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_admin?: boolean | null
+          is_broadcast?: boolean | null
+          is_read?: boolean | null
+          receiver_id?: string | null
+          sender_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_admin?: boolean | null
+          is_broadcast?: boolean | null
+          is_read?: boolean | null
+          receiver_id?: string | null
+          sender_id?: string | null
+        }
+        Relationships: []
+      }
       short_urls: {
         Row: {
           created_at: string | null
@@ -205,6 +238,10 @@ export type Database = {
       generate_unique_short_code: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_unread_messages_count: {
+        Args: { user_id: string }
+        Returns: number
       }
       get_user_stats: {
         Args: { user_id: string }

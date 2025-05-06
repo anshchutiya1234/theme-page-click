@@ -8,7 +8,9 @@ import {
   UserGroupIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline';
+import { MessageSquare } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import UnreadMessagesIndicator from '../messages/UnreadMessagesIndicator';
 
 const MobileNav = () => {
   const location = useLocation();
@@ -18,6 +20,7 @@ const MobileNav = () => {
     { name: 'Dashboard', href: '/dashboard', icon: ChartBarIcon },
     { name: 'Sub-Partners', href: '/sub-partners', icon: UserGroupIcon },
     { name: 'Withdrawals', href: '/withdrawals', icon: CurrencyDollarIcon },
+    { name: 'Messages', href: '/messages', icon: MessageSquare, indicator: true },
     { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
   ];
   
@@ -39,7 +42,18 @@ const MobileNav = () => {
                 isActive ? 'text-partner-purple' : 'text-gray-500'
               }`}
             >
-              <item.icon className="h-5 w-5" />
+              <div className="relative">
+                {item.name === 'Messages' ? (
+                  <MessageSquare className="h-5 w-5" />
+                ) : (
+                  <item.icon className="h-5 w-5" />
+                )}
+                {item.indicator && (
+                  <div className="absolute -top-2 -right-2">
+                    <UnreadMessagesIndicator className="h-4 w-4 text-[10px]" />
+                  </div>
+                )}
+              </div>
               <span className="text-xs">{item.name}</span>
             </Link>
           );
