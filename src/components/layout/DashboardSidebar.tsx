@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChartBarIcon, Cog6ToothIcon, CurrencyDollarIcon, UserGroupIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
@@ -46,8 +45,8 @@ const DashboardSidebar = () => {
   return <aside className="fixed inset-y-0 left-0 z-10 hidden w-64 flex-col border-r bg-white lg:flex">
       <div className="border-b p-4">
         <Link to="/dashboard" className="flex items-center gap-2">
-          <span className="text-xl font-bold">Trading </span>
-          <span className="text-sm font-bold">Circle HQ</span>
+          <span className="text-xl font-bold">Arciuz </span>
+          <span className="text-sm font-bold">HQ</span>
         </Link>
       </div>
       
