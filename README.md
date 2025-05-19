@@ -1,6 +1,6 @@
-# Trading Circle Partners
+# Arciuz Partners
 
-Welcome to Trading Circle Partners - Your Trusted Trading Partner
+Welcome to Arciuz Partners - Your Trusted Trading Partner
 
 ## Getting Started
 

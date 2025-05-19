@@ -116,7 +116,7 @@ const PartnerCodeCard = ({
     });
   };
   const shareToTwitter = () => {
-    const shareText = `Join the Trading Circle Partner Program and earn $1,000 per 10,000 clicks. Use my link below:`;
+    const shareText = `Join the Arciuz Partner Program and earn $1,000 per 10,000 clicks. Use my link below:`;
     const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shortUrl)}`;
     window.open(shareUrl, '_blank');
   };
