@@ -35,7 +35,7 @@ const PartnerCodeCard = ({
         const {
           data: existingUrl,
           error: existingError
-        } = await supabase.from('short_urls').select('short_code').eq('target_url', 'https://tradingcircle.space/join?ref=' + partnerCode).single();
+        } = await supabase.from('short_urls').select('short_code').eq('target_url', `https://arciuz-ai-x.vercel.app/landing?ref=${partnerCode}`).single();
         if (existingUrl) {
           console.log('Found existing short URL:', existingUrl);
           setShortUrl(`${window.location.origin}/r/${existingUrl.short_code}`);
@@ -64,7 +64,7 @@ const PartnerCodeCard = ({
             error: insertError
           } = await supabase.from('short_urls').insert({
             user_id: profile.id,
-            target_url: 'https://tradingcircle.space/join?ref=' + partnerCode,
+            target_url: `https://arciuz-ai-x.vercel.app/landing?ref=${partnerCode}`,
             short_code: shortCode
           }).select('short_code').single();
           if (insertError) {
