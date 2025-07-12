@@ -81,12 +81,63 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // If user profile doesn't exist, try to create it
+        if (error.code === 'PGRST116') {
+          console.log('User profile not found, creating one...');
+          await createMissingProfile(userId);
+          return;
+        }
+        throw error;
+      }
       
       setProfile(data as UserProfile);
     } catch (error: any) {
       console.error('Error fetching user profile:', error.message);
       setProfile(null);
+    }
+  };
+
+  const createMissingProfile = async (userId: string) => {
+    try {
+      // Get user info from auth
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Generate a unique partner code
+      const partnerCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+      
+      // Create user profile
+      const { data, error } = await supabase
+        .from('users')
+        .insert({
+          id: userId,
+          name: user.user_metadata?.name || 'User',
+          username: `user_${userId.substring(0, 8)}`,
+          email: user.email || '',
+          instagram_username: user.user_metadata?.instagram_username || '',
+          partner_code: partnerCode,
+          referred_by: user.user_metadata?.referred_by || null,
+          is_admin: false
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setProfile(data as UserProfile);
+      
+      toast({
+        title: "Profile Created",
+        description: "Your user profile has been created successfully.",
+      });
+    } catch (error: any) {
+      console.error('Error creating user profile:', error.message);
+      toast({
+        title: "Error",
+        description: "Failed to create user profile. Please try refreshing the page.",
+        variant: "destructive",
+      });
     }
   };
 

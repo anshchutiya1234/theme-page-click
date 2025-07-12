@@ -21,6 +21,7 @@ import Withdrawals from "./pages/Withdrawals";
 import Admin from "./pages/Admin";
 import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
+import AuthDebug from "./components/debug/AuthDebug";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const App = () => (
         <AuthProvider>
           <Toaster />
           <Sonner />
+          <AuthDebug />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/join" element={<Join />} />
