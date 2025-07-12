@@ -3,8 +3,8 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://ekfgfyjtfgjrfwbkoifd.supabase.co";
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrZmdmeWp0ZmdqcmZ3YmtvaWZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU5NzQzNjUsImV4cCI6MjA2MTU1MDM2NX0.BuOzE--PTtOKdbyqptQgrCh1ChvHjgls4JiIAUXMDMU";
+const SUPABASE_URL = (import.meta as any).env.VITE_SUPABASE_URL || "https://ohlbatlumobvgvvzgvhe.supabase.co";
+const SUPABASE_ANON_KEY = (import.meta as any).env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9obGJhdGx1bW9idmd2dnpndmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzMTUxMzgsImV4cCI6MjA2Nzg5MTEzOH0.HbVEyCNGOPbUbBBEKQbHEZ_rJAOq3S1KiPvmzD1--LA";
 
 // For debugging
 console.log('Supabase URL:', SUPABASE_URL);
