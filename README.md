@@ -1,6 +1,6 @@
-# Arciuz Partners
+# Leverage Money Partners
 
-Welcome to Arciuz Partners - Your Trusted Trading Partner
+Welcome to Leverage Money Partners - Your Trusted Trading Partner
 
 ## Getting Started
 

@@ -13,7 +13,7 @@ const Index = () => {
         <section className="py-20 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto text-center">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              Partner with Arciuz
+              Partner with Leverage Money
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
               Earn $1,000 per 10,000 high-quality clicks. No cap. Join our partner program and start earning today.

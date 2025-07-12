@@ -1,4 +1,4 @@
-# Supabase Setup Guide for Arciuz Dashboard
+# Supabase Setup Guide for Leverage Money Dashboard
 
 This guide will help you recreate your Supabase project from scratch after it was accidentally deleted.
 
@@ -17,7 +17,7 @@ This guide will help you recreate your Supabase project from scratch after it wa
 2. Click "New Project"
 3. Choose your organization
 4. Fill in the project details:
-   - **Name**: `arciuz-dashboard` (or any name you prefer)
+   - **Name**: `leverage-money-dashboard` (or any name you prefer)
    - **Database Password**: Choose a strong password (save this!)
    - **Region**: Choose the region closest to your users
 5. Click "Create new project"

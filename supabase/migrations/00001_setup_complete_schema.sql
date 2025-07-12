@@ -1,4 +1,4 @@
--- Complete database schema for Arciuz Dashboard
+-- Complete database schema for Leverage Money Dashboard
 -- This file recreates all tables, functions, and policies needed for the application
 
 -- =============================================

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Supabase Setup Script for Arciuz Dashboard
+# Supabase Setup Script for Leverage Money Dashboard
 # This script helps automate the setup process for your new Supabase project
 
-echo "🚀 Arciuz Dashboard - Supabase Setup Script"
+echo "🚀 Leverage Money Dashboard - Supabase Setup Script"
 echo "==========================================="
 echo ""
 

@@ -35,7 +35,7 @@ const PartnerCodeCard = ({
         const {
           data: existingUrl,
           error: existingError
-        } = await supabase.from('short_urls').select('short_code').eq('target_url', `https://arciuz-ai-x.vercel.app/landing?ref=${partnerCode}`).single();
+        } = await supabase.from('short_urls').select('short_code').eq('target_url', `https://leverage-money.com/landing?ref=${partnerCode}`).single();
         if (existingUrl) {
           console.log('Found existing short URL:', existingUrl);
           setShortUrl(`${window.location.origin}/r/${existingUrl.short_code}`);
@@ -64,7 +64,7 @@ const PartnerCodeCard = ({
             error: insertError
           } = await supabase.from('short_urls').insert({
             user_id: profile.id,
-            target_url: `https://arciuz-ai-x.vercel.app/landing?ref=${partnerCode}`,
+            target_url: `https://leverage-money.com/landing?ref=${partnerCode}`,
             short_code: shortCode
           }).select('short_code').single();
           if (insertError) {
@@ -116,7 +116,7 @@ const PartnerCodeCard = ({
     });
   };
   const shareToTwitter = () => {
-    const shareText = `Join the Arciuz Partner Program and earn $1,000 per 10,000 clicks. Use my link below:`;
+    const shareText = `Join the Leverage Money Partner Program and earn $1,000 per 10,000 clicks. Use my link below:`;
     const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shortUrl)}`;
     window.open(shareUrl, '_blank');
   };
