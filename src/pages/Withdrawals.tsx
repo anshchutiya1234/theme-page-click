@@ -195,13 +195,9 @@ const Withdrawals = () => {
         className="flex justify-center items-center h-64"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.6 }}
       >
-        <motion.div 
-          className="h-12 w-12 border-4 border-partner-primary border-t-transparent rounded-full"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        />
+        <div className="h-12 w-12 border-4 border-partner-primary border-t-transparent rounded-full" />
       </motion.div>
     );
   }

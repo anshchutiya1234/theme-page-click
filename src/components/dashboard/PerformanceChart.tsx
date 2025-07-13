@@ -224,13 +224,9 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
             className="flex justify-center items-center h-full"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.6 }}
           >
-            <motion.div 
-              className="h-8 w-8 border-4 border-partner-primary border-t-transparent rounded-full"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            />
+            <div className="h-8 w-8 border-4 border-partner-primary border-t-transparent rounded-full" />
           </motion.div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
