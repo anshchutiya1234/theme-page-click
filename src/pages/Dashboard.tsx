@@ -5,7 +5,7 @@ import { LinkIcon, ChartBarIcon, UsersIcon, CurrencyDollarIcon } from '@heroicon
 import { motion } from 'framer-motion';
 import StatsCard from '@/components/dashboard/StatsCard';
 import PerformanceChart from '@/components/dashboard/PerformanceChart';
-
+import RecentActivity from '@/components/dashboard/RecentActivity';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -151,13 +151,23 @@ const Dashboard = () => {
         </motion.div>
       </motion.div>
       
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.7 }}
-      >
-        <PerformanceChart userId={profile.id} />
-      </motion.div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+        >
+          <PerformanceChart userId={profile.id} />
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
+        >
+          <RecentActivity />
+        </motion.div>
+      </div>
 
     </motion.div>
   );
