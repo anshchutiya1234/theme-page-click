@@ -283,9 +283,9 @@ const Withdrawals = () => {
   };
 
   const paymentMethodIcons = {
-    paypal: '💳',
-    upi: '🏦',
-    crypto: '₿',
+    paypal: '',
+    upi: '',
+    crypto: '',
   };
 
   if (isLoading) {
@@ -435,8 +435,7 @@ const Withdrawals = () => {
                 </p>
                 <ul className="text-sm text-amber-700 space-y-1">
                   <li>• All earnings (${totalEarnings.toFixed(2)}) will be sent to your payment method</li>
-                  <li>• Your account balance will be reset to $0.00</li>
-                  <li>• Processing typically takes 7 business days</li>
+                  <li>• Processing typically takes 3-4 business days</li>
                 </ul>
               </div>
             </div>
@@ -510,8 +509,7 @@ const Withdrawals = () => {
                     </p>
                     <ul className="text-sm text-green-700 space-y-1">
                       <li>• All earnings (${totalEarnings.toFixed(2)}) will be withdrawn</li>
-                      <li>• Your account balance will be reset to $0.00</li>
-                      <li>• Processing takes 7 business days</li>
+                      <li>• Processing takes 3-4 business days</li>
                       <li>• This action cannot be undone</li>
                     </ul>
                   </div>
@@ -614,7 +612,7 @@ const Withdrawals = () => {
                     value="paypal"
                     {...registerPaymentMethod('type')}
                   />
-                  <Label htmlFor="paypal">💳 PayPal</Label>
+                  <Label htmlFor="paypal">PayPal</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <input
@@ -623,7 +621,7 @@ const Withdrawals = () => {
                     value="upi"
                     {...registerPaymentMethod('type')}
                   />
-                  <Label htmlFor="upi">🏦 UPI (India)</Label>
+                  <Label htmlFor="upi">UPI (India)</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <input
@@ -632,7 +630,7 @@ const Withdrawals = () => {
                     value="crypto"
                     {...registerPaymentMethod('type')}
                   />
-                  <Label htmlFor="crypto">₿ Cryptocurrency</Label>
+                  <Label htmlFor="crypto">Cryptocurrency</Label>
                 </div>
               </RadioGroup>
             </div>
@@ -701,9 +699,9 @@ const Withdrawals = () => {
                       </td>
                       <td className="py-4 font-medium">{withdrawal.amount}</td>
                       <td className="py-4">
-                        {withdrawal.method === 'paypal' && '💳 PayPal'}
-                        {withdrawal.method === 'upi' && '🏦 UPI'}
-                        {withdrawal.method === 'crypto' && '₿ Crypto'}
+                        {withdrawal.method === 'paypal' && 'PayPal'}
+                        {withdrawal.method === 'upi' && 'UPI'}
+                        {withdrawal.method === 'crypto' && 'Crypto'}
                       </td>
                       <td className="py-4 truncate max-w-[150px]">
                         {withdrawal.details}
