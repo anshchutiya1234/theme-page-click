@@ -104,9 +104,6 @@ const Join = () => {
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
             <h1 className="text-3xl font-bold">Join the Partner Program</h1>
-            <p className="mt-2 text-gray-600">
-              Earn $1,000 per 10,000 high-quality clicks. No cap.
-            </p>
           </div>
           
           {error && (
