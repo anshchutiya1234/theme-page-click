@@ -45,7 +45,7 @@ const ProjectAssignmentNotification: React.FC<ProjectAssignmentNotificationProps
       <Card className="relative z-10 w-full max-w-md mx-4 bg-white shadow-2xl">
         <CardContent className="p-8 text-center">
           {/* Trophy Animation */}
-          <div className="mb-6">
+          <div className="mb-6 flex justify-center">
             {animationData && (
               <Lottie
                 animationData={animationData}
@@ -58,7 +58,7 @@ const ProjectAssignmentNotification: React.FC<ProjectAssignmentNotificationProps
           {/* Congratulations Text */}
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              🎉 Congratulations!
+              Congratulations!
             </h2>
             <p className="text-gray-600 text-lg">
               You got one project assigned
