@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 import { LinkIcon, ChartBarIcon, UsersIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
 import StatsCard from '@/components/dashboard/StatsCard';
 import PerformanceChart from '@/components/dashboard/PerformanceChart';
-import PartnerCodeCard from '@/components/dashboard/PartnerCodeCard';
-import SubPartnersList from '@/components/dashboard/SubPartnersList';
+
+
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -79,17 +79,16 @@ const Dashboard = () => {
         </p>
       </div>
       
-      <PartnerCodeCard partnerCode={profile.partner_code} />
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
-          title="Total Direct Clicks"
+          title="Total Direct Points"
           value={stats?.direct_clicks.toLocaleString() || '0'}
           icon={<LinkIcon className="h-5 w-5" />}
           trend={stats?.direct_clicks ? undefined : null}
         />
         <StatsCard
-          title="Bonus Clicks"
+          title="Bonus Points"
           value={stats?.bonus_clicks.toLocaleString() || '0'}
           icon={<ChartBarIcon className="h-5 w-5" />}
           trend={stats?.bonus_clicks ? undefined : null}
@@ -110,15 +109,7 @@ const Dashboard = () => {
       
       <PerformanceChart userId={profile.id} />
       
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Latest Sub-Partners</h2>
-          <Link to="/sub-partners" className="text-partner-purple hover:underline text-sm">
-            View All
-          </Link>
-        </div>
-        <SubPartnersList partnerCode={profile.partner_code} />
-      </div>
+
     </div>
   );
 };

@@ -239,7 +239,7 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
               <Line
                 type="monotone"
                 dataKey="directClicks"
-                name="Direct Clicks"
+                name="Direct Points"
                 stroke="#5E51E7"
                 strokeWidth={3}
                 dot={{ r: 4 }}
@@ -248,7 +248,7 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
               <Line
                 type="monotone"
                 dataKey="bonusClicks"
-                name="Bonus Clicks"
+                name="Bonus Points"
                 stroke="#3B82F6"
                 strokeWidth={3}
                 dot={{ r: 4 }}

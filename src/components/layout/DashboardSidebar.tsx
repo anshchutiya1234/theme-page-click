@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChartBarIcon, Cog6ToothIcon, CurrencyDollarIcon, UserGroupIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { ChartBarIcon, Cog6ToothIcon, CurrencyDollarIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { MessageSquare } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import UnreadMessagesIndicator from '../messages/UnreadMessagesIndicator';
@@ -16,10 +16,6 @@ const DashboardSidebar = () => {
     name: 'Dashboard',
     href: '/dashboard',
     icon: ChartBarIcon
-  }, {
-    name: 'Sub-Partners',
-    href: '/sub-partners',
-    icon: UserGroupIcon
   }, {
     name: 'Withdrawals',
     href: '/withdrawals',

@@ -210,14 +210,14 @@ const Withdrawals = () => {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="font-semibold text-gray-500 text-sm">TOTAL CLICKS</h3>
+          <h3 className="font-semibold text-gray-500 text-sm">TOTAL POINTS</h3>
           <p className="text-3xl font-bold mt-1">{eligibility.total_clicks.toLocaleString()}</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="font-semibold text-gray-500 text-sm">TOTAL EARNINGS</h3>
           <p className="text-3xl font-bold mt-1">{totalEarnings}</p>
-          <p className="text-sm text-gray-500 mt-2">$0.10 per click</p>
+          <p className="text-sm text-gray-500 mt-2">$0.10 per point</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-md">
@@ -226,7 +226,7 @@ const Withdrawals = () => {
             <>
               <p className="text-green-600 font-bold mt-1">Eligible</p>
               <p className="text-sm text-gray-500 mt-2">
-                Minimum 10,000 clicks and 30+ days since signup
+                Minimum 10,000 points and 30+ days since signup
               </p>
               {!isRequestingWithdrawal && (
                 <Button 
@@ -243,7 +243,7 @@ const Withdrawals = () => {
               <p className="text-sm text-gray-500 mt-2">
                 {daysUntilWithdrawal > 0 
                   ? `${daysUntilWithdrawal} days until eligible` 
-                  : 'Need 10,000+ clicks to be eligible'}
+                  : 'Need 10,000+ points to be eligible'}
               </p>
               <div className="mt-4 w-full bg-gray-200 rounded-full h-2.5">
                 <div 
@@ -252,7 +252,7 @@ const Withdrawals = () => {
                 ></div>
               </div>
               <p className="text-xs text-gray-500 mt-1 text-right">
-                {eligibility.total_clicks.toLocaleString()} / 10,000 clicks
+                {eligibility.total_clicks.toLocaleString()} / 10,000 points
               </p>
             </>
           )}
