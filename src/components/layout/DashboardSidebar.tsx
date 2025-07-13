@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChartBarIcon, Cog6ToothIcon, CurrencyDollarIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, FolderOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import UnreadMessagesIndicator from '../messages/UnreadMessagesIndicator';
@@ -18,6 +18,10 @@ const DashboardSidebar = () => {
     href: '/dashboard',
     icon: ChartBarIcon
   }, {
+    name: 'Projects',
+    href: '/projects',
+    icon: FolderOpen
+  }, {
     name: 'Withdrawals',
     href: '/withdrawals',
     icon: CurrencyDollarIcon
@@ -32,11 +36,15 @@ const DashboardSidebar = () => {
     icon: Cog6ToothIcon
   }];
 
-  // Add admin route if user is admin
+  // Add admin routes if user is admin
   const navigation = profile?.is_admin ? [...baseNavigation, {
     name: 'Admin',
     href: '/admin',
     icon: ShieldCheckIcon
+  }, {
+    name: 'Admin Projects',
+    href: '/admin/projects',
+    icon: FolderOpen
   }] : baseNavigation;
   
   return <motion.aside 

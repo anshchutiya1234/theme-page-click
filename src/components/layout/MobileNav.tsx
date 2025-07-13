@@ -7,7 +7,7 @@ import {
   CurrencyDollarIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, FolderOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import UnreadMessagesIndicator from '../messages/UnreadMessagesIndicator';
@@ -18,6 +18,7 @@ const MobileNav = () => {
   
   const baseNavigation = [
     { name: 'Dashboard', href: '/dashboard', icon: ChartBarIcon },
+    { name: 'Projects', href: '/projects', icon: FolderOpen },
     { name: 'Withdrawals', href: '/withdrawals', icon: CurrencyDollarIcon },
     { name: 'Messages', href: '/messages', icon: MessageSquare, indicator: true },
     { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },

@@ -19,6 +19,8 @@ import SubPartners from "./pages/SubPartners";
 import Settings from "./pages/Settings";
 import Withdrawals from "./pages/Withdrawals";
 import Admin from "./pages/Admin";
+import AdminProjects from "./pages/AdminProjects";
+import Projects from "./pages/Projects";
 import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 import AuthDebug from "./components/debug/AuthDebug";
@@ -70,11 +72,13 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/projects" element={<Projects />} />
               <Route path="/sub-partners" element={<SubPartners />} />
               <Route path="/withdrawals" element={<Withdrawals />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/admin/projects" element={<AdminProjects />} />
             </Route>
             
             <Route path="*" element={<NotFound />} />

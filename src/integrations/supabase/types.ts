@@ -214,6 +214,126 @@ export type Database = {
           },
         ]
       }
+      projects: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          reference_link: string | null
+          recreate_link: string | null
+          download_link: string | null
+          deadline: string | null
+          reward_clicks: number
+          status: string
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          reference_link?: string | null
+          recreate_link?: string | null
+          download_link?: string | null
+          deadline?: string | null
+          reward_clicks?: number
+          status?: string
+          created_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          reference_link?: string | null
+          recreate_link?: string | null
+          download_link?: string | null
+          deadline?: string | null
+          reward_clicks?: number
+          status?: string
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_assignments: {
+        Row: {
+          id: string
+          project_id: string
+          user_id: string
+          status: string
+          accepted_at: string | null
+          submitted_at: string | null
+          submission_link: string | null
+          admin_feedback: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          user_id: string
+          status?: string
+          accepted_at?: string | null
+          submitted_at?: string | null
+          submission_link?: string | null
+          admin_feedback?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          user_id?: string
+          status?: string
+          accepted_at?: string | null
+          submitted_at?: string | null
+          submission_link?: string | null
+          admin_feedback?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_assignments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_assignments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_assignments_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
