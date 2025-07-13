@@ -36,7 +36,8 @@ const Projects = () => {
           *,
           projects (*)
         `)
-        .eq('user_id', profile?.id);
+        .eq('user_id', profile?.id)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
