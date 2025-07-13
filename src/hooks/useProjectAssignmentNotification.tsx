@@ -8,6 +8,26 @@ export const useProjectAssignmentNotification = () => {
   const { showNotification } = useProjectAssignment();
   const checkedAssignments = useRef<Set<string>>(new Set());
 
+  // Load previously shown notifications from localStorage
+  useEffect(() => {
+    if (profile) {
+      const shownNotifications = localStorage.getItem(`shown_notifications_${profile.id}`);
+      if (shownNotifications) {
+        const parsed = JSON.parse(shownNotifications);
+        checkedAssignments.current = new Set(parsed);
+      }
+    }
+  }, [profile]);
+
+  // Save shown notifications to localStorage
+  const saveShownNotification = (assignmentId: string) => {
+    if (profile) {
+      checkedAssignments.current.add(assignmentId);
+      const shownArray = Array.from(checkedAssignments.current);
+      localStorage.setItem(`shown_notifications_${profile.id}`, JSON.stringify(shownArray));
+    }
+  };
+
   useEffect(() => {
     if (!profile) return;
 
@@ -34,19 +54,15 @@ export const useProjectAssignmentNotification = () => {
         }
 
         if (data) {
-          // Check for any new assignments we haven't seen before
+          // Check for any new assignments we haven't shown notifications for
           const newAssignments = data.filter(assignment => 
             !checkedAssignments.current.has(assignment.id)
           );
 
           if (newAssignments.length > 0) {
-            // Mark all assignments as checked
-            data.forEach(assignment => {
-              checkedAssignments.current.add(assignment.id);
-            });
-
-            // Show notification for the newest assignment
+            // Show notification only for the newest assignment
             const newestAssignment = newAssignments[0];
+            saveShownNotification(newestAssignment.id);
             showNotification((newestAssignment as any).projects?.title);
           }
         }
@@ -71,6 +87,14 @@ export const useProjectAssignmentNotification = () => {
         },
         async (payload) => {
           console.log('New assignment received:', payload);
+          
+          // Check if we've already shown notification for this assignment
+          if (checkedAssignments.current.has(payload.new.id)) {
+            return;
+          }
+          
+          // Mark as shown and save to localStorage
+          saveShownNotification(payload.new.id);
           
           // Fetch the project title for the notification
           const { data: projectData, error: projectError } = await supabase

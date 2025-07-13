@@ -26,6 +26,17 @@ const ProjectAssignmentNotification: React.FC<ProjectAssignmentNotificationProps
       .catch(error => console.error('Error loading animation:', error));
   }, []);
 
+  // Auto-close after 6 seconds
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 6000); // 6 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, onClose]);
+
   const handleViewProjects = () => {
     onClose();
     navigate('/projects');
