@@ -95,7 +95,7 @@
   }
 
   .stat-card {
-    @apply bg-white shadow-sm border border-gray-200 rounded-lg p-6 flex flex-col h-full transition-all hover:shadow-md;
+    @apply bg-white shadow-sm border border-gray-200 rounded-xl p-6 flex flex-col h-full transition-all duration-300 hover:shadow-lg hover:shadow-partner-primary/10 hover:-translate-y-1 animate-slide-in;
   }
 
   .stat-card-title {
@@ -107,14 +107,14 @@
   }
 
   .nav-link {
-    @apply flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors;
+    @apply flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-all duration-200 hover:scale-105;
   }
 
   .nav-link-active {
-    @apply bg-partner-primary text-white;
+    @apply bg-partner-primary text-white shadow-lg shadow-partner-primary/30;
   }
 
   .nav-link-inactive {
-    @apply text-partner-mediumGray hover:bg-partner-lightGray;
+    @apply text-partner-mediumGray hover:bg-partner-lightGray hover:text-partner-darkGray;
   }
 }

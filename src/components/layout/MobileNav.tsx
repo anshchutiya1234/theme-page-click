@@ -8,6 +8,7 @@ import {
   ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import { MessageSquare } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import UnreadMessagesIndicator from '../messages/UnreadMessagesIndicator';
 
@@ -28,36 +29,47 @@ const MobileNav = () => {
     : baseNavigation;
 
   return (
-    <div className="fixed bottom-0 left-0 z-10 w-full border-t bg-white lg:hidden">
+    <motion.div 
+      className="fixed bottom-0 left-0 z-10 w-full border-t bg-white lg:hidden shadow-lg"
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
       <div className="grid h-16" style={{ gridTemplateColumns: `repeat(${navigation.length}, minmax(0, 1fr))` }}>
-        {navigation.map((item) => {
+        {navigation.map((item, index) => {
           const isActive = location.pathname === item.href;
           return (
-            <Link
+            <motion.div
               key={item.name}
-              to={item.href}
-              className={`flex flex-col items-center justify-center ${
-                isActive ? 'text-partner-primary' : 'text-partner-mediumGray'
-              }`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
             >
-              <div className="relative">
-                {item.name === 'Messages' ? (
-                  <MessageSquare className="h-5 w-5" />
-                ) : (
-                  <item.icon className="h-5 w-5" />
-                )}
-                {item.indicator && (
-                  <div className="absolute -top-2 -right-2">
-                    <UnreadMessagesIndicator className="h-4 w-4 text-[10px]" />
-                  </div>
-                )}
-              </div>
-              <span className="text-xs">{item.name}</span>
-            </Link>
+              <Link
+                to={item.href}
+                className={`flex flex-col items-center justify-center h-full transition-all duration-200 hover:scale-110 ${
+                  isActive ? 'text-partner-primary' : 'text-partner-mediumGray'
+                }`}
+              >
+                <div className="relative">
+                  {item.name === 'Messages' ? (
+                    <MessageSquare className="h-5 w-5" />
+                  ) : (
+                    <item.icon className="h-5 w-5" />
+                  )}
+                  {item.indicator && (
+                    <div className="absolute -top-2 -right-2">
+                      <UnreadMessagesIndicator className="h-4 w-4 text-[10px]" />
+                    </div>
+                  )}
+                </div>
+                <span className="text-xs">{item.name}</span>
+              </Link>
+            </motion.div>
           );
         })}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

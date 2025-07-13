@@ -9,6 +9,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ChartData {
@@ -187,31 +188,50 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <motion.div 
+      className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-        <h2 className="text-lg font-semibold">Performance Overview</h2>
+        <h2 className="text-lg font-semibold text-partner-darkGray">Performance Overview</h2>
         <div className="flex gap-2 mt-3 sm:mt-0">
-          {ranges.map((range) => (
-            <button
+          {ranges.map((range, index) => (
+            <motion.button
               key={range}
-              className={`px-3 py-1 text-sm rounded-md ${
+              className={`px-3 py-1 text-sm rounded-lg transition-all duration-200 hover:scale-105 ${
                 selectedRange === range
-                  ? 'bg-partner-purple text-white'
+                  ? 'bg-partner-primary text-white shadow-lg'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
               onClick={() => setSelectedRange(range)}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               {range}
-            </button>
+            </motion.button>
           ))}
         </div>
       </div>
       
       <div className="h-80">
         {isLoading ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="animate-spin h-8 w-8 border-4 border-partner-primary border-t-transparent rounded-full"></div>
-          </div>
+          <motion.div 
+            className="flex justify-center items-center h-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div 
+              className="h-8 w-8 border-4 border-partner-primary border-t-transparent rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+          </motion.div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
@@ -258,7 +278,7 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
           </ResponsiveContainer>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

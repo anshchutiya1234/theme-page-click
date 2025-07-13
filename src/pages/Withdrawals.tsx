@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -190,9 +191,18 @@ const Withdrawals = () => {
 
   if (isLoading || !profile || !eligibility) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin h-8 w-8 border-4 border-partner-primary border-t-transparent rounded-full"></div>
-      </div>
+      <motion.div 
+        className="flex justify-center items-center h-64"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <motion.div 
+          className="h-12 w-12 border-4 border-partner-primary border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        />
+      </motion.div>
     );
   }
 
