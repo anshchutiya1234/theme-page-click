@@ -9,8 +9,10 @@ import RecentActivity from '@/components/dashboard/RecentActivity';
 import LoadingLogo from '@/components/ui/loading-logo';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { useProjectAssignment } from '@/contexts/ProjectAssignmentContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
 
 interface UserStats {
   direct_clicks: number;
@@ -21,6 +23,7 @@ interface UserStats {
 
 const Dashboard = () => {
   const { profile } = useAuth();
+  const { showNotification } = useProjectAssignment();
   const { toast } = useToast();
   const [stats, setStats] = useState<UserStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -89,10 +92,23 @@ const Dashboard = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
       >
-        <h1 className="text-3xl font-bold text-partner-darkGray">Partner Dashboard</h1>
-        <p className="text-partner-mediumGray mt-1">
-          Welcome back, {profile.name}
-        </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-partner-darkGray">Partner Dashboard</h1>
+            <p className="text-partner-mediumGray mt-1">
+              Welcome back, {profile.name}
+            </p>
+          </div>
+          
+          {/* Test button for project assignment notification */}
+          <Button 
+            onClick={() => showNotification("Test Project Assignment")}
+            variant="outline"
+            className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+          >
+            Test Notification
+          </Button>
+        </div>
       </motion.div>
       
       

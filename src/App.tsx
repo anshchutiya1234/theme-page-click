@@ -4,12 +4,15 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { AuthProvider } from "./contexts/AuthContext";
+import { ProjectAssignmentProvider, useProjectAssignment } from "./contexts/ProjectAssignmentContext";
+import { useProjectAssignmentNotification } from "./hooks/useProjectAssignmentNotification";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import LoadingLogo from "./components/ui/loading-logo";
+import ProjectAssignmentNotification from "./components/ProjectAssignmentNotification";
 import Index from "./pages/Index";
 import Join from "./pages/Join";
 import Login from "./pages/Login";
@@ -50,40 +53,64 @@ const ShortUrlRedirect = () => {
   );
 };
 
+const AppWithNotifications = () => {
+  return (
+    <ProjectAssignmentProvider>
+      <Toaster />
+      <Sonner />
+      <AuthDebug />
+      <ProjectAssignmentNotificationWrapper />
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/join" element={<Join />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/r/:code" element={<ShortUrlRedirect />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        
+        {/* Protected Dashboard Routes */}
+        <Route path="/" element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/sub-partners" element={<SubPartners />} />
+          <Route path="/withdrawals" element={<Withdrawals />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/projects" element={<AdminProjects />} />
+        </Route>
+        
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </ProjectAssignmentProvider>
+  );
+};
+
+const ProjectAssignmentNotificationWrapper = () => {
+  const { isNotificationOpen, hideNotification, currentProjectTitle } = useProjectAssignment();
+  
+  // Use the hook to monitor for new assignments
+  useProjectAssignmentNotification();
+  
+  return (
+    <ProjectAssignmentNotification
+      isOpen={isNotificationOpen}
+      onClose={hideNotification}
+      projectTitle={currentProjectTitle}
+    />
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <BrowserRouter>
         <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <AuthDebug />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/join" element={<Join />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/r/:code" element={<ShortUrlRedirect />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            
-            {/* Protected Dashboard Routes */}
-            <Route path="/" element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/projects" element={<Projects />} />
-              <Route path="/sub-partners" element={<SubPartners />} />
-              <Route path="/withdrawals" element={<Withdrawals />} />
-              <Route path="/messages" element={<Messages />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/admin/projects" element={<AdminProjects />} />
-            </Route>
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppWithNotifications />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
