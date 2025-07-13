@@ -8,11 +8,14 @@ import { useEffect, useState } from "react";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProjectAssignmentProvider, useProjectAssignment } from "./contexts/ProjectAssignmentContext";
+import { ProjectApprovalProvider, useProjectApproval } from "./contexts/ProjectApprovalContext";
 import { useProjectAssignmentNotification } from "./hooks/useProjectAssignmentNotification";
+import { useProjectApprovalNotification } from "./hooks/useProjectApprovalNotification";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import LoadingLogo from "./components/ui/loading-logo";
 import ProjectAssignmentNotification from "./components/ProjectAssignmentNotification";
+import ProjectApprovalNotification from "./components/ProjectApprovalNotification";
 import Index from "./pages/Index";
 import Join from "./pages/Join";
 import Login from "./pages/Login";
@@ -56,36 +59,39 @@ const ShortUrlRedirect = () => {
 const AppWithNotifications = () => {
   return (
     <ProjectAssignmentProvider>
-      <Toaster />
-      <Sonner />
-      <AuthDebug />
-      <ProjectAssignmentNotificationWrapper />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/join" element={<Join />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/r/:code" element={<ShortUrlRedirect />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        
-        {/* Protected Dashboard Routes */}
-        <Route path="/" element={
-          <ProtectedRoute>
-            <DashboardLayout />
-          </ProtectedRoute>
-        }>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/sub-partners" element={<SubPartners />} />
-          <Route path="/withdrawals" element={<Withdrawals />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/admin/projects" element={<AdminProjects />} />
-        </Route>
-        
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <ProjectApprovalProvider>
+        <Toaster />
+        <Sonner />
+        <AuthDebug />
+        <ProjectAssignmentNotificationWrapper />
+        <ProjectApprovalNotificationWrapper />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/join" element={<Join />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/r/:code" element={<ShortUrlRedirect />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          
+          {/* Protected Dashboard Routes */}
+          <Route path="/" element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/sub-partners" element={<SubPartners />} />
+            <Route path="/withdrawals" element={<Withdrawals />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/projects" element={<AdminProjects />} />
+          </Route>
+          
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </ProjectApprovalProvider>
     </ProjectAssignmentProvider>
   );
 };
@@ -101,6 +107,22 @@ const ProjectAssignmentNotificationWrapper = () => {
       isOpen={isNotificationOpen}
       onClose={hideNotification}
       projectTitle={currentProjectTitle}
+    />
+  );
+};
+
+const ProjectApprovalNotificationWrapper = () => {
+  const { isApprovalNotificationOpen, hideApprovalNotification, currentApprovalProject, currentEarnings } = useProjectApproval();
+  
+  // Use the hook to monitor for project approvals
+  useProjectApprovalNotification();
+  
+  return (
+    <ProjectApprovalNotification
+      isOpen={isApprovalNotificationOpen}
+      onClose={hideApprovalNotification}
+      projectTitle={currentApprovalProject}
+      earnings={currentEarnings}
     />
   );
 };
