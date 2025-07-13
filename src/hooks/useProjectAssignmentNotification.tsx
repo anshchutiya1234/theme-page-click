@@ -4,32 +4,41 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProjectAssignment } from '@/contexts/ProjectAssignmentContext';
 
 export const useProjectAssignmentNotification = () => {
-  const { profile } = useAuth();
+  const { profile, loading, session } = useAuth();
   const { showNotification } = useProjectAssignment();
   const checkedAssignments = useRef<Set<string>>(new Set());
 
   // Load previously shown notifications from localStorage
   useEffect(() => {
-    if (profile) {
-      const shownNotifications = localStorage.getItem(`shown_notifications_${profile.id}`);
-      if (shownNotifications) {
-        const parsed = JSON.parse(shownNotifications);
-        checkedAssignments.current = new Set(parsed);
+    if (profile && !loading) {
+      try {
+        const shownNotifications = localStorage.getItem(`shown_notifications_${profile.id}`);
+        if (shownNotifications) {
+          const parsed = JSON.parse(shownNotifications);
+          checkedAssignments.current = new Set(parsed);
+        }
+      } catch (error) {
+        console.error('Error loading shown notifications from localStorage:', error);
       }
     }
-  }, [profile]);
+  }, [profile, loading]);
 
   // Save shown notifications to localStorage
   const saveShownNotification = (assignmentId: string) => {
     if (profile) {
-      checkedAssignments.current.add(assignmentId);
-      const shownArray = Array.from(checkedAssignments.current);
-      localStorage.setItem(`shown_notifications_${profile.id}`, JSON.stringify(shownArray));
+      try {
+        checkedAssignments.current.add(assignmentId);
+        const shownArray = Array.from(checkedAssignments.current);
+        localStorage.setItem(`shown_notifications_${profile.id}`, JSON.stringify(shownArray));
+      } catch (error) {
+        console.error('Error saving shown notification to localStorage:', error);
+      }
     }
   };
 
   useEffect(() => {
-    if (!profile) return;
+    // Only proceed if we have a valid authenticated session and profile
+    if (!profile || !session || loading) return;
 
     // Check for new assignments periodically
     const checkForNewAssignments = async () => {
@@ -86,27 +95,31 @@ export const useProjectAssignmentNotification = () => {
           filter: `user_id=eq.${profile.id}`,
         },
         async (payload) => {
-          console.log('New assignment received:', payload);
-          
-          // Check if we've already shown notification for this assignment
-          if (checkedAssignments.current.has(payload.new.id)) {
-            return;
-          }
-          
-          // Mark as shown and save to localStorage
-          saveShownNotification(payload.new.id);
-          
-          // Fetch the project title for the notification
-          const { data: projectData, error: projectError } = await supabase
-            .from('projects')
-            .select('title')
-            .eq('id', payload.new.project_id)
-            .single();
+          try {
+            console.log('New assignment received:', payload);
+            
+            // Check if we've already shown notification for this assignment
+            if (checkedAssignments.current.has(payload.new.id)) {
+              return;
+            }
+            
+            // Mark as shown and save to localStorage
+            saveShownNotification(payload.new.id);
+            
+            // Fetch the project title for the notification
+            const { data: projectData, error: projectError } = await supabase
+              .from('projects')
+              .select('title')
+              .eq('id', payload.new.project_id)
+              .single();
 
-          if (!projectError && projectData) {
-            showNotification(projectData.title);
-          } else {
-            showNotification();
+            if (!projectError && projectData) {
+              showNotification(projectData.title);
+            } else {
+              showNotification();
+            }
+          } catch (error) {
+            console.error('Error handling real-time assignment update:', error);
           }
         }
       )
@@ -116,7 +129,7 @@ export const useProjectAssignmentNotification = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile, showNotification]);
+  }, [profile, session, loading, showNotification]);
 
   return null;
 }; 

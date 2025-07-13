@@ -37,20 +37,25 @@ const AuthDebug = () => {
         description: "User profile created manually.",
       });
     } catch (error: any) {
+      console.error('Error creating profile manually:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to create profile",
         variant: "destructive",
       });
     }
   };
 
+  // Only show in development mode
   if (process.env.NODE_ENV === 'production') return null;
+  
+  // Don't show if we don't have access to the environment
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) return null;
 
   return (
     <Card className="fixed bottom-4 right-4 w-80 z-50">
       <CardHeader>
-        <CardTitle className="text-sm">Auth Debug</CardTitle>
+        <CardTitle className="text-sm">Auth Debug (Dev Only)</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2 text-xs">
         <div>

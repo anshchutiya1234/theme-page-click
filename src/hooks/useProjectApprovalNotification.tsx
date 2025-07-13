@@ -4,32 +4,41 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProjectApproval } from '@/contexts/ProjectApprovalContext';
 
 export const useProjectApprovalNotification = () => {
-  const { profile } = useAuth();
+  const { profile, loading, session } = useAuth();
   const { showApprovalNotification } = useProjectApproval();
   const checkedApprovals = useRef<Set<string>>(new Set());
 
   // Load previously shown notifications from localStorage
   useEffect(() => {
-    if (profile) {
-      const shownApprovals = localStorage.getItem(`shown_approvals_${profile.id}`);
-      if (shownApprovals) {
-        const parsed = JSON.parse(shownApprovals);
-        checkedApprovals.current = new Set(parsed);
+    if (profile && !loading) {
+      try {
+        const shownApprovals = localStorage.getItem(`shown_approvals_${profile.id}`);
+        if (shownApprovals) {
+          const parsed = JSON.parse(shownApprovals);
+          checkedApprovals.current = new Set(parsed);
+        }
+      } catch (error) {
+        console.error('Error loading shown approvals from localStorage:', error);
       }
     }
-  }, [profile]);
+  }, [profile, loading]);
 
   // Save shown notifications to localStorage
   const saveShownApproval = (assignmentId: string) => {
     if (profile) {
-      checkedApprovals.current.add(assignmentId);
-      const shownArray = Array.from(checkedApprovals.current);
-      localStorage.setItem(`shown_approvals_${profile.id}`, JSON.stringify(shownArray));
+      try {
+        checkedApprovals.current.add(assignmentId);
+        const shownArray = Array.from(checkedApprovals.current);
+        localStorage.setItem(`shown_approvals_${profile.id}`, JSON.stringify(shownArray));
+      } catch (error) {
+        console.error('Error saving shown approval to localStorage:', error);
+      }
     }
   };
 
   useEffect(() => {
-    if (!profile) return;
+    // Only proceed if we have a valid authenticated session and profile
+    if (!profile || !session || loading) return;
 
     // Check for existing approved projects that haven't been shown
     const checkForExistingApprovals = async () => {
@@ -92,33 +101,37 @@ export const useProjectApprovalNotification = () => {
           filter: `user_id=eq.${profile.id}`,
         },
         async (payload) => {
-          console.log('Project assignment updated:', payload);
-          
-          // Check if this is a new approval (status changed to 'approved')
-          if (payload.new.status === 'approved' && payload.old.status !== 'approved') {
+          try {
+            console.log('Project assignment updated:', payload);
             
-            // Check if we've already shown notification for this approval
-            if (checkedApprovals.current.has(payload.new.id)) {
-              return;
-            }
-            
-            // Mark as shown and save to localStorage
-            saveShownApproval(payload.new.id);
-            
-            // Fetch the project details for the notification
-            const { data: projectData, error: projectError } = await supabase
-              .from('projects')
-              .select('title, reward_clicks')
-              .eq('id', payload.new.project_id)
-              .single();
+            // Check if this is a new approval (status changed to 'approved')
+            if (payload.new.status === 'approved' && payload.old.status !== 'approved') {
+              
+              // Check if we've already shown notification for this approval
+              if (checkedApprovals.current.has(payload.new.id)) {
+                return;
+              }
+              
+              // Mark as shown and save to localStorage
+              saveShownApproval(payload.new.id);
+              
+              // Fetch the project details for the notification
+              const { data: projectData, error: projectError } = await supabase
+                .from('projects')
+                .select('title, reward_clicks')
+                .eq('id', payload.new.project_id)
+                .single();
 
-            if (!projectError && projectData) {
-              const earnings = (projectData.reward_clicks || 0) * 0.10;
-              showApprovalNotification(projectData.title, earnings);
-            } else {
-              // Show notification without project details if fetch fails
-              showApprovalNotification(undefined, 0);
+              if (!projectError && projectData) {
+                const earnings = (projectData.reward_clicks || 0) * 0.10;
+                showApprovalNotification(projectData.title, earnings);
+              } else {
+                // Show notification without project details if fetch fails
+                showApprovalNotification(undefined, 0);
+              }
             }
+          } catch (error) {
+            console.error('Error handling real-time approval update:', error);
           }
         }
       )
@@ -128,7 +141,7 @@ export const useProjectApprovalNotification = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile, showApprovalNotification]);
+  }, [profile, session, loading, showApprovalNotification]);
 
   return null;
 }; 
