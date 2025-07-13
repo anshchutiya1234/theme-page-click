@@ -64,10 +64,16 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				partner: {
-					purple: '#5E51E7',
-					blue: '#3B82F6',
-					darkGray: '#1E1E1E',
-					lightGray: '#F5F5F5',
+					primary: '#0070ba',
+					secondary: '#003087',
+					accent: '#009cde',
+					success: '#00d632',
+					warning: '#ffc439',
+					error: '#d82c2c',
+					darkGray: '#2c2e2f',
+					lightGray: '#f5f7fa',
+					mediumGray: '#6c7378',
+					white: '#ffffff',
 				}
 			},
 			borderRadius: {

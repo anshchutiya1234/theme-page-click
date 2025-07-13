@@ -41,7 +41,7 @@ const DashboardSidebar = () => {
   return <aside className="fixed inset-y-0 left-0 z-10 hidden w-64 flex-col border-r bg-white lg:flex">
       <div className="border-b p-4">
         <Link to="/dashboard" className="flex items-center gap-2">
-                        <span className="text-xl font-bold">Leverage Money</span>
+                        <span className="text-xl font-bold text-partner-primary">Leverage Money</span>
         </Link>
       </div>
       
@@ -73,12 +73,12 @@ const DashboardSidebar = () => {
       <div className="border-t p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-gray-200" />
+            <div className="h-8 w-8 rounded-full bg-partner-lightGray" />
             <div className="flex-1 truncate">
               <p className="text-sm font-medium">{profile?.name || 'Partner'}</p>
             </div>
           </div>
-          <button onClick={() => signOut()} className="text-sm text-gray-500 hover:text-gray-700">
+          <button onClick={() => signOut()} className="text-sm text-partner-mediumGray hover:text-partner-darkGray">
             Logout
           </button>
         </div>

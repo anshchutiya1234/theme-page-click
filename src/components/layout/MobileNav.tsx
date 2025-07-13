@@ -37,7 +37,7 @@ const MobileNav = () => {
               key={item.name}
               to={item.href}
               className={`flex flex-col items-center justify-center ${
-                isActive ? 'text-partner-purple' : 'text-gray-500'
+                isActive ? 'text-partner-primary' : 'text-partner-mediumGray'
               }`}
             >
               <div className="relative">

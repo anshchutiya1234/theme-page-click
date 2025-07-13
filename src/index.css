@@ -5,44 +5,44 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 210 20% 98%;
+    --foreground: 210 11% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 210 11% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 210 11% 15%;
 
-    --primary: 261 77% 61%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 204 100% 37%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 210 11% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 210 11% 71%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 199 100% 43%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 261 77% 61%;
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
+    --ring: 204 100% 37%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 210 11% 15%;
+    --sidebar-primary: 204 100% 37%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 20% 96%;
+    --sidebar-accent-foreground: 210 11% 15%;
+    --sidebar-border: 210 20% 90%;
+    --sidebar-ring: 204 100% 37%;
   }
 
   .dark {
@@ -95,15 +95,15 @@
   }
 
   .stat-card {
-    @apply bg-white shadow-md rounded-lg p-6 flex flex-col h-full transition-all;
+    @apply bg-white shadow-sm border border-gray-200 rounded-lg p-6 flex flex-col h-full transition-all hover:shadow-md;
   }
 
   .stat-card-title {
-    @apply text-sm font-medium text-gray-500 mb-2;
+    @apply text-sm font-medium text-partner-mediumGray mb-2;
   }
 
   .stat-card-value {
-    @apply text-3xl font-bold;
+    @apply text-3xl font-bold text-partner-darkGray;
   }
 
   .nav-link {
@@ -111,10 +111,10 @@
   }
 
   .nav-link-active {
-    @apply bg-partner-purple text-white;
+    @apply bg-partner-primary text-white;
   }
 
   .nav-link-inactive {
-    @apply text-gray-500 hover:bg-gray-100;
+    @apply text-partner-mediumGray hover:bg-partner-lightGray;
   }
 }

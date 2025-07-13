@@ -210,7 +210,7 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
       <div className="h-80">
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin h-8 w-8 border-4 border-partner-purple border-t-transparent rounded-full"></div>
+            <div className="animate-spin h-8 w-8 border-4 border-partner-primary border-t-transparent rounded-full"></div>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
@@ -240,7 +240,7 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
                 type="monotone"
                 dataKey="directClicks"
                 name="Direct Points"
-                stroke="#5E51E7"
+                stroke="#0070ba"
                 strokeWidth={3}
                 dot={{ r: 4 }}
                 activeDot={{ r: 6 }}
@@ -249,7 +249,7 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
                 type="monotone"
                 dataKey="bonusClicks"
                 name="Bonus Points"
-                stroke="#3B82F6"
+                stroke="#009cde"
                 strokeWidth={3}
                 dot={{ r: 4 }}
                 activeDot={{ r: 6 }}

@@ -62,7 +62,7 @@ const Dashboard = () => {
   if (isLoading || !profile) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin h-8 w-8 border-4 border-partner-purple border-t-transparent rounded-full"></div>
+        <div className="animate-spin h-8 w-8 border-4 border-partner-primary border-t-transparent rounded-full"></div>
       </div>
     );
   }
@@ -73,8 +73,8 @@ const Dashboard = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Partner Dashboard</h1>
-        <p className="text-gray-500 mt-1">
+        <h1 className="text-3xl font-bold text-partner-darkGray">Partner Dashboard</h1>
+        <p className="text-partner-mediumGray mt-1">
           Welcome back, {profile.name}
         </p>
       </div>
