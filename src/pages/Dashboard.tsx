@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import StatsCard from '@/components/dashboard/StatsCard';
 import PerformanceChart from '@/components/dashboard/PerformanceChart';
 import RecentActivity from '@/components/dashboard/RecentActivity';
+import LoadingLogo from '@/components/ui/loading-logo';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -68,7 +69,7 @@ const Dashboard = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="h-12 w-12 border-4 border-partner-primary border-t-transparent rounded-full" />
+        <LoadingLogo size="lg" />
       </motion.div>
     );
   }

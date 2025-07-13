@@ -13,6 +13,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Project, CreateProjectData, ProjectAssignment } from '@/types/project';
+import LoadingLogo from '@/components/ui/loading-logo';
 
 interface User {
   id: string;
@@ -227,7 +228,7 @@ const AdminProjects = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="h-12 w-12 border-4 border-partner-primary border-t-transparent rounded-full" />
+        <LoadingLogo size="md" />
       </motion.div>
     );
   }

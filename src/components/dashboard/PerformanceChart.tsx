@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
+import LoadingLogo from '@/components/ui/loading-logo';
 
 interface ChartData {
   name: string;
@@ -187,6 +188,8 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
     }));
   };
 
+
+
   return (
     <motion.div 
       className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300"
@@ -226,7 +229,7 @@ const PerformanceChart = ({ userId }: PerformanceChartProps) => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="h-8 w-8 border-4 border-partner-primary border-t-transparent rounded-full" />
+            <LoadingLogo size="md" />
           </motion.div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">

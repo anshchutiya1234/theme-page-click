@@ -11,6 +11,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProjectWithAssignment, ProjectSubmissionData } from '@/types/project';
+import LoadingLogo from '@/components/ui/loading-logo';
 
 const Projects = () => {
   const { profile } = useAuth();
@@ -159,7 +160,7 @@ const Projects = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="h-12 w-12 border-4 border-partner-primary border-t-transparent rounded-full" />
+        <LoadingLogo size="lg" />
       </motion.div>
     );
   }

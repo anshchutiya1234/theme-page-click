@@ -1,6 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Users, UserPlus, TrendingUp, Calendar, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import LoadingLogo from '@/components/ui/loading-logo';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSubPartners } from '@/hooks/use-sub-partners';
 import { SubPartnerFilter } from '@/components/sub-partners/SubPartnerFilter';
@@ -28,7 +36,7 @@ const SubPartners = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin h-8 w-8 border-4 border-partner-purple border-t-transparent rounded-full"></div>
+        <LoadingLogo size="md" />
       </div>
     );
   }

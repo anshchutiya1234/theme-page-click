@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Award, Clock, CheckCircle, XCircle, ChevronRight, TrendingUp, FileText, Upload, FolderOpen } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import LoadingLogo from '@/components/ui/loading-logo';
 
 interface ProjectActivity {
   id: string;
@@ -158,7 +159,7 @@ const RecentActivity = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="h-8 w-8 border-4 border-partner-primary border-t-transparent rounded-full" />
+            <LoadingLogo size="md" />
           </motion.div>
         </CardContent>
       </Card>

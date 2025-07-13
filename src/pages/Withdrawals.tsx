@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
+import { DollarSign, Calendar, Clock, CheckCircle, XCircle, AlertCircle, TrendingUp, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import LoadingLogo from '@/components/ui/loading-logo';
 
 interface WithdrawalHistory {
   id: string;
@@ -189,7 +191,7 @@ const Withdrawals = () => {
     crypto: 'Your wallet address',
   };
 
-  if (isLoading || !profile || !eligibility) {
+  if (isLoading) {
     return (
       <motion.div 
         className="flex justify-center items-center h-64"
@@ -197,7 +199,7 @@ const Withdrawals = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="h-12 w-12 border-4 border-partner-primary border-t-transparent rounded-full" />
+        <LoadingLogo size="md" />
       </motion.div>
     );
   }

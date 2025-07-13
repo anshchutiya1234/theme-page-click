@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
+import LoadingLogo from '@/components/ui/loading-logo';
 import AdminWithdrawalRequests from '@/components/admin/AdminWithdrawalRequests';
 import AdminUsersList from '@/components/admin/AdminUsersList';
 import AdminMessages from '@/components/admin/AdminMessages';
@@ -45,7 +46,7 @@ const Admin = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin h-8 w-8 border-4 border-partner-purple border-t-transparent rounded-full"></div>
+        <LoadingLogo size="md" />
       </div>
     );
   }

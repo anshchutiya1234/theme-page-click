@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import DashboardLayout from "./components/layout/DashboardLayout";
+import LoadingLogo from "./components/ui/loading-logo";
 import Index from "./pages/Index";
 import Join from "./pages/Join";
 import Login from "./pages/Login";
@@ -42,8 +43,8 @@ const ShortUrlRedirect = () => {
   return (
     <div className="flex items-center justify-center h-screen">
       <div className="text-center">
-        <div className="animate-spin h-8 w-8 border-4 border-partner-purple border-t-transparent rounded-full mx-auto mb-4"></div>
-        <p>Redirecting...</p>
+        <LoadingLogo size="md" />
+        <p className="mt-4">Redirecting...</p>
       </div>
     </div>
   );

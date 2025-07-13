@@ -17,6 +17,7 @@ import {
   DialogClose
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import LoadingLogo from '@/components/ui/loading-logo';
 
 interface Message {
   id: string;
@@ -401,7 +402,7 @@ const AdminMessages = () => {
             <ScrollArea className="h-[555px]">
               {isLoading && users.length === 0 ? (
                 <div className="flex justify-center items-center h-32">
-                  <div className="animate-spin h-6 w-6 border-4 border-partner-purple border-t-transparent rounded-full"></div>
+                  <LoadingLogo size="sm" />
                 </div>
               ) : filteredUsers.length === 0 ? (
                 <div className="p-4 text-center text-gray-500">

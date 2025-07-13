@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Send } from 'lucide-react';
+import LoadingLogo from '@/components/ui/loading-logo';
 
 interface Message {
   id: string;
@@ -203,7 +204,7 @@ const Messages = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin h-8 w-8 border-4 border-partner-purple border-t-transparent rounded-full"></div>
+        <LoadingLogo size="md" />
       </div>
     );
   }

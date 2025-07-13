@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
+import LoadingLogo from '@/components/ui/loading-logo';
 
 interface SubPartner {
   id: string;
@@ -81,13 +82,13 @@ const SubPartnersList = ({ partnerCode, limit = 5 }: SubPartnersListProps) => {
   }, [partnerCode, limit]);
 
   if (isLoading) {
-    return (
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
-        <div className="flex justify-center items-center h-24">
-          <div className="animate-spin h-8 w-8 border-4 border-partner-purple border-t-transparent rounded-full"></div>
+          return (
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+          <div className="flex justify-center items-center h-24">
+            <LoadingLogo size="md" />
+          </div>
         </div>
-      </div>
-    );
+      );
   }
 
   return (

@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import LoadingLogo from '@/components/ui/loading-logo';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -155,7 +156,7 @@ const PartnerEarnings = () => {
                 {isLoading ? (
                   <>
                     <span className="mr-2">Loading</span>
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-b-transparent" />
+                    <LoadingLogo size="sm" />
                   </>
                 ) : (
                   "View Earnings"

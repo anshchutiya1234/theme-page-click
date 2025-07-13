@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
+import { motion } from 'framer-motion';
+import { Users, UserCheck, UserX, Search, Mail, Instagram, Calendar, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import LoadingLogo from '@/components/ui/loading-logo';
 
 interface UserData {
   id: string;
@@ -147,7 +153,7 @@ const AdminUsersList = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin h-8 w-8 border-4 border-partner-purple border-t-transparent rounded-full"></div>
+        <LoadingLogo size="md" />
       </div>
     );
   }
