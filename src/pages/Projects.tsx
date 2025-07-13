@@ -166,7 +166,7 @@ const Projects = () => {
 
   return (
     <motion.div 
-      className="space-y-8"
+      className="space-y-6 px-4 sm:px-0"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -175,48 +175,50 @@ const Projects = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
+        className="text-center sm:text-left"
       >
-        <h1 className="text-3xl font-bold text-partner-darkGray">My Projects</h1>
-        <p className="text-partner-mediumGray mt-1">
+        <h1 className="text-2xl sm:text-3xl font-bold text-partner-darkGray">My Projects</h1>
+        <p className="text-partner-mediumGray mt-1 text-sm sm:text-base">
           View and manage your assigned projects
         </p>
       </motion.div>
 
-      <div className="flex gap-4">
-        <div className="bg-white p-4 rounded-xl border border-gray-200">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-partner-primary/10 rounded-lg flex items-center justify-center">
-              <Clock className="h-4 w-4 text-partner-primary" />
+      {/* Stats Cards - Mobile responsive grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-partner-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Clock className="h-5 w-5 text-partner-primary" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-sm text-partner-mediumGray">Total Projects</p>
-              <p className="text-xl font-bold text-partner-darkGray">{projects.length}</p>
+              <p className="text-2xl font-bold text-partner-darkGray">{projects.length}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-gray-200">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
-              <Award className="h-4 w-4 text-green-600" />
+        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Award className="h-5 w-5 text-green-600" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-sm text-partner-mediumGray">Completed</p>
-              <p className="text-xl font-bold text-partner-darkGray">
+              <p className="text-2xl font-bold text-partner-darkGray">
                 {projects.filter(p => p.assignment?.status === 'approved').length}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-gray-200">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
-              <CheckCircle className="h-4 w-4 text-blue-600" />
+        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm sm:col-span-2 lg:col-span-1">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <CheckCircle className="h-5 w-5 text-blue-600" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-sm text-partner-mediumGray">In Progress</p>
-              <p className="text-xl font-bold text-partner-darkGray">
+              <p className="text-2xl font-bold text-partner-darkGray">
                 {projects.filter(p => p.assignment?.status === 'accepted').length}
               </p>
             </div>
@@ -224,7 +226,8 @@ const Projects = () => {
         </div>
       </div>
 
-      <div className="grid gap-6">
+      {/* Projects List */}
+      <div className="space-y-4">
         {projects.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -244,40 +247,43 @@ const Projects = () => {
               transition={{ duration: 0.3, delay: index * 0.1 }}
             >
               <Card className="hover:shadow-lg transition-all duration-300">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <CardTitle className="text-xl text-partner-darkGray flex items-center gap-2">
-                        {project.title}
+                <CardHeader className="pb-3">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-lg sm:text-xl text-partner-darkGray flex items-start gap-2 flex-wrap">
+                        <span className="break-words">{project.title}</span>
                         {isDeadlinePassed(project.deadline) && (
-                          <Badge variant="destructive" className="text-xs">
+                          <Badge variant="destructive" className="text-xs whitespace-nowrap">
                             Deadline Passed
                           </Badge>
                         )}
                       </CardTitle>
                       {project.description && (
-                        <p className="text-partner-mediumGray mt-2">{project.description}</p>
+                        <p className="text-partner-mediumGray mt-2 text-sm sm:text-base break-words">
+                          {project.description}
+                        </p>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-partner-primary/10 text-partner-primary">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge className="bg-partner-primary/10 text-partner-primary whitespace-nowrap">
                         {project.reward_clicks} points
                       </Badge>
                       {project.assignment && getStatusBadge(project.assignment.status)}
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <CardContent className="pt-0">
+                  {/* Links - Mobile responsive */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
                     {project.reference_link && (
                       <a 
                         href={project.reference_link} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-partner-primary hover:underline text-sm flex items-center gap-1"
+                        className="text-partner-primary hover:underline text-sm flex items-center gap-2 p-2 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors"
                       >
-                        <ExternalLink className="h-4 w-4" />
-                        Reference Link
+                        <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">Reference Link</span>
                       </a>
                     )}
                     {project.recreate_link && (
@@ -285,10 +291,10 @@ const Projects = () => {
                         href={project.recreate_link} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-partner-primary hover:underline text-sm flex items-center gap-1"
+                        className="text-partner-primary hover:underline text-sm flex items-center gap-2 p-2 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors"
                       >
-                        <ExternalLink className="h-4 w-4" />
-                        Recreate Link
+                        <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">Recreate Link</span>
                       </a>
                     )}
                     {project.download_link && (
@@ -296,28 +302,33 @@ const Projects = () => {
                         href={project.download_link} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-partner-primary hover:underline text-sm flex items-center gap-1"
+                        className="text-partner-primary hover:underline text-sm flex items-center gap-2 p-2 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors"
                       >
-                        <ExternalLink className="h-4 w-4" />
-                        Download Link
+                        <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">Download Link</span>
                       </a>
                     )}
                   </div>
 
+                  {/* Deadline */}
                   {project.deadline && (
-                    <div className="flex items-center gap-2 text-sm text-partner-mediumGray mb-4">
-                      <Calendar className="h-4 w-4" />
-                      Deadline: {new Date(project.deadline).toLocaleDateString()} at {new Date(project.deadline).toLocaleTimeString()}
+                    <div className="flex items-center gap-2 text-sm text-partner-mediumGray mb-4 p-2 bg-gray-50 rounded-lg">
+                      <Calendar className="h-4 w-4 flex-shrink-0" />
+                      <span className="break-words">
+                        Deadline: {new Date(project.deadline).toLocaleDateString()} at {new Date(project.deadline).toLocaleTimeString()}
+                      </span>
                     </div>
                   )}
 
+                  {/* Admin Feedback */}
                   {project.assignment?.admin_feedback && (
                     <div className="bg-gray-50 p-3 rounded-lg mb-4">
                       <p className="text-sm font-medium text-gray-700 mb-1">Admin Feedback:</p>
-                      <p className="text-sm text-gray-600">{project.assignment.admin_feedback}</p>
+                      <p className="text-sm text-gray-600 break-words">{project.assignment.admin_feedback}</p>
                     </div>
                   )}
 
+                  {/* Submission Link */}
                   {project.assignment?.submission_link && (
                     <div className="bg-blue-50 p-3 rounded-lg mb-4">
                       <p className="text-sm font-medium text-blue-700 mb-1">Your Submission:</p>
@@ -325,20 +336,21 @@ const Projects = () => {
                         href={project.assignment.submission_link} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                        className="text-sm text-blue-600 hover:underline flex items-center gap-1 break-all"
                       >
-                        <ExternalLink className="h-3 w-3" />
-                        {project.assignment.submission_link}
+                        <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                        <span className="break-all">{project.assignment.submission_link}</span>
                       </a>
                     </div>
                   )}
 
-                  <div className="flex gap-2">
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-2">
                     {project.assignment?.status === 'pending' && (
                       <>
                         <Button
                           onClick={() => handleProjectAction(project.assignment!.id, 'accepted')}
-                          className="flex items-center gap-2"
+                          className="flex items-center justify-center gap-2 w-full sm:w-auto"
                         >
                           <CheckCircle className="h-4 w-4" />
                           Accept Project
@@ -346,7 +358,7 @@ const Projects = () => {
                         <Button
                           variant="destructive"
                           onClick={() => handleProjectAction(project.assignment!.id, 'rejected')}
-                          className="flex items-center gap-2"
+                          className="flex items-center justify-center gap-2 w-full sm:w-auto"
                         >
                           <XCircle className="h-4 w-4" />
                           Reject Project
@@ -359,15 +371,16 @@ const Projects = () => {
                         <DialogTrigger asChild>
                           <Button
                             onClick={() => setSelectedProject(project)}
-                            className="flex items-center gap-2"
+                            className="flex items-center justify-center gap-2 w-full sm:w-auto"
                           >
                             <Upload className="h-4 w-4" />
                             Submit Project
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="mx-4 max-w-md">
                           <DialogHeader>
-                            <DialogTitle>Submit Project - {project.title}</DialogTitle>
+                            <DialogTitle className="text-lg">Submit Project</DialogTitle>
+                            <p className="text-sm text-gray-600 break-words">{project.title}</p>
                           </DialogHeader>
                           <form onSubmit={handleSubmitProject} className="space-y-4">
                             <div>
@@ -379,16 +392,17 @@ const Projects = () => {
                                 onChange={(e) => setSubmissionLink(e.target.value)}
                                 placeholder="https://your-project-link.com"
                                 required
+                                className="mt-1"
                               />
                               <p className="text-xs text-gray-500 mt-1">
                                 Provide a link to your completed project (GitHub, live demo, etc.)
                               </p>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex flex-col sm:flex-row gap-2">
                               <Button 
                                 type="submit" 
                                 disabled={isSubmitting || !submissionLink.trim()}
-                                className="flex-1"
+                                className="w-full sm:flex-1"
                               >
                                 {isSubmitting ? 'Submitting...' : 'Submit Project'}
                               </Button>
@@ -399,6 +413,7 @@ const Projects = () => {
                                   setSelectedProject(null);
                                   setSubmissionLink('');
                                 }}
+                                className="w-full sm:w-auto"
                               >
                                 Cancel
                               </Button>
