@@ -210,13 +210,34 @@ const Withdrawals = () => {
   const daysUntilWithdrawal = Math.max(0, 30 - eligibility.days_since_signup);
   
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-partner-darkGray">Withdrawals</h1>
-        <p className="text-partner-mediumGray mt-1">
+    <motion.div 
+      className="space-y-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
+        <motion.h1 
+          className="text-3xl font-bold text-partner-darkGray"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          Withdrawals
+        </motion.h1>
+        <motion.p 
+          className="text-partner-mediumGray mt-1"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
           Request payouts for your earnings
-        </p>
-      </div>
+        </motion.p>
+      </motion.div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-md">
@@ -401,7 +422,7 @@ const Withdrawals = () => {
           </p>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
