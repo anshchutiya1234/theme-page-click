@@ -1,6 +1,6 @@
 # Database Schema Documentation
 
-This document explains the database schema for the Leverage Money Dashboard application.
+This document explains the database schema for the Wealth Elites Dashboard application.
 
 ## Tables Overview
 

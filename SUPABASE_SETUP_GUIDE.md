@@ -1,4 +1,4 @@
-# Supabase Setup Guide for Leverage Money Dashboard
+# Supabase Setup Guide for Wealth Elites Dashboard
 
 This guide will help you recreate your Supabase project from scratch after it was accidentally deleted.
 

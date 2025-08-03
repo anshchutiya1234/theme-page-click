@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import StatsCard from '@/components/dashboard/StatsCard';
 import PerformanceChart from '@/components/dashboard/PerformanceChart';
 import RecentActivity from '@/components/dashboard/RecentActivity';
+import PartnerCodeCard from '@/components/dashboard/PartnerCodeCard';
 import LoadingLogo from '@/components/ui/loading-logo';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -153,12 +154,21 @@ const Dashboard = () => {
           />
         </motion.div>
       </motion.div>
+
+      {/* Partner Code Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.7 }}
+      >
+        <PartnerCodeCard partnerCode={profile.partner_code} />
+      </motion.div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.7 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
         >
           <PerformanceChart userId={profile.id} />
         </motion.div>
@@ -166,7 +176,7 @@ const Dashboard = () => {
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
+          transition={{ duration: 0.5, delay: 0.9 }}
         >
           <RecentActivity />
         </motion.div>

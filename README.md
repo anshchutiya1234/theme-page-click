@@ -1,6 +1,6 @@
-# Leverage Money Partners
+# Wealth Elites Partners
 
-Welcome to Leverage Money Partners - Your Trusted Trading Partner
+Welcome to Wealth Elites Partners - Your Trusted Trading Partner
 
 ## Getting Started
 

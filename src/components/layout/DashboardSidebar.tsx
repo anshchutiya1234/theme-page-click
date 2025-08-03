@@ -60,7 +60,7 @@ const DashboardSidebar = () => {
         transition={{ duration: 0.4, delay: 0.1 }}
       >
         <Link to="/dashboard" className="flex items-center gap-2 hover:scale-105 transition-transform duration-200">
-          <span className="text-xl font-bold text-partner-primary">Leverage Money</span>
+          <span className="text-xl font-bold text-partner-primary">Wealth Elites</span>
         </Link>
       </motion.div>
       

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Supabase Setup Script for Leverage Money Dashboard
+# Supabase Setup Script for Wealth Elites Dashboard
 # This script helps automate the setup process for your new Supabase project
 
-echo "🚀 Leverage Money Dashboard - Supabase Setup Script"
+echo "🚀 Wealth Elites Dashboard - Supabase Setup Script"
 echo "==========================================="
 echo ""
 

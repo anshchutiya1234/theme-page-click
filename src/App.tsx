@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-
 import { useEffect, useState } from "react";
 
 import { AuthProvider } from "./contexts/AuthContext";
+import { supabase } from "./integrations/supabase/client";
 import { ProjectAssignmentProvider, useProjectAssignment } from "./contexts/ProjectAssignmentContext";
 import { ProjectApprovalProvider, useProjectApproval } from "./contexts/ProjectApprovalContext";
 import { useProjectAssignmentNotification } from "./hooks/useProjectAssignmentNotification";
@@ -36,14 +37,69 @@ const queryClient = new QueryClient();
 
 const ShortUrlRedirect = () => {
   const { code } = useParams();
-  const edgeFunctionsUrl = import.meta.env.VITE_EDGE_FUNCTIONS_URL || 'https://ekfgfyjtfgjrfwbkoifd.supabase.co/functions/v1';
+  const [isRedirecting, setIsRedirecting] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
-    // Redirect to the edge function URL directly in the browser
-    if (code) {
-      window.location.href = `${edgeFunctionsUrl}/redirect/${code}`;
-    }
-  }, [code, edgeFunctionsUrl]);
+    const handleRedirect = async () => {
+      if (!code) {
+        setError('No redirect code provided');
+        setIsRedirecting(false);
+        return;
+      }
+
+      try {
+        // Get the target URL from the database
+        const { data: urlData, error: urlError } = await supabase
+          .from('short_urls')
+          .select('target_url, user_id')
+          .eq('short_code', code)
+          .single();
+
+        if (urlError || !urlData) {
+          setError('Invalid or expired link');
+          setIsRedirecting(false);
+          return;
+        }
+
+        // Track the click
+        const { error: clickError } = await supabase
+          .from('clicks')
+          .insert({
+            user_id: urlData.user_id,
+            type: 'direct',
+            ip_address: 'unknown', // You could get this from a service if needed
+            user_agent: navigator.userAgent
+          });
+
+        if (clickError) {
+          console.error('Error tracking click:', clickError);
+          // Continue with redirect even if tracking fails
+        }
+
+        // Redirect to the target URL
+        window.location.href = urlData.target_url;
+      } catch (error) {
+        console.error('Redirect error:', error);
+        setError('Failed to redirect');
+        setIsRedirecting(false);
+      }
+    };
+
+    handleRedirect();
+  }, [code]);
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Link Error</h1>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <a href="/" className="text-blue-600 hover:underline">Go to Homepage</a>
+        </div>
+      </div>
+    );
+  }
 
   // Show loading indicator while redirecting
   return (
